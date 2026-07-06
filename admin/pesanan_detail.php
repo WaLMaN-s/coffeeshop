@@ -72,7 +72,12 @@ require __DIR__ . '/includes/layout_top.php';
                   <?php else: ?>
                     <span class="foto-placeholder"><i class="bi bi-cup-hot"></i></span>
                   <?php endif; ?>
-                  <span class="fw-semibold"><?= e($it['menu']) ?></span>
+                  <span>
+                    <span class="fw-semibold"><?= e($it['menu']) ?></span>
+                    <?php if (!empty($it['opsi'])): ?>
+                      <span class="d-block text-secondary" style="font-size:12px"><?= e($it['opsi']) ?></span>
+                    <?php endif; ?>
+                  </span>
                 </div>
               </td>
               <td class="angka"><?= rupiah($it['harga']) ?></td>

@@ -96,6 +96,9 @@ require __DIR__ . '/includes/site_top.php';
       <?php endif; ?>
       <div style="flex:1">
         <div style="font-weight:700;font-size:13.5px"><?= e($it['menu']) ?></div>
+        <?php if (!empty($it['opsi'])): ?>
+          <div style="font-size:11.5px;color:var(--ink-muted)"><?= e($it['opsi']) ?></div>
+        <?php endif; ?>
         <div style="font-size:12.5px;color:var(--ink-muted)"><?= $it['jumlah'] ?> × <?= rupiah($it['harga']) ?></div>
       </div>
       <div style="font-weight:700"><?= rupiah($it['jumlah'] * $it['harga']) ?></div>

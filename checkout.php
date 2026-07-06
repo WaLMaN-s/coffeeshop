@@ -27,9 +27,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
            ->execute([$nomor, $_SESSION['pelanggan_id'], $total, 'menunggu', $catatan ?: null]);
         $pesananId = (int) $db->lastInsertId();
 
-        $stmtItem = $db->prepare('INSERT INTO pesanan_item (pesanan_id, menu_id, jumlah, harga) VALUES (?,?,?,?)');
+        $stmtItem = $db->prepare('INSERT INTO pesanan_item (pesanan_id, menu_id, opsi, jumlah, harga) VALUES (?,?,?,?,?)');
         foreach ($item as $it) {
-            $stmtItem->execute([$pesananId, $it['id'], $it['jumlah'], $it['harga']]);
+            $stmtItem->execute([$pesananId, $it['menu_id'], $it['opsi_label'] ?: null, $it['jumlah'], $it['harga_satuan']]);
         }
 
         $db->prepare('INSERT INTO pembayaran (pesanan_id, metode, jumlah, status) VALUES (?,?,?,?)')
@@ -62,7 +62,12 @@ require __DIR__ . '/includes/site_top.php';
     <div style="font-weight:700;margin-bottom:10px">Ringkasan Pesanan</div>
     <?php foreach ($item as $it): ?>
       <div style="display:flex;justify-content:space-between;padding:7px 0;font-size:13.5px;border-bottom:1px solid var(--border)">
-        <span><?= $it['jumlah'] ?>× <?= e($it['nama']) ?></span>
+        <span>
+          <?= $it['jumlah'] ?>× <?= e($it['nama']) ?>
+          <?php if ($it['opsi_label']): ?>
+            <span style="display:block;font-size:11.5px;color:var(--ink-muted)"><?= e($it['opsi_label']) ?></span>
+          <?php endif; ?>
+        </span>
         <span style="font-weight:600"><?= rupiah($it['subtotal']) ?></span>
       </div>
     <?php endforeach; ?>

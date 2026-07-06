@@ -3,22 +3,47 @@ require_once __DIR__ . '/includes/site_init.php';
 
 /* ---------- Aksi keranjang ---------- */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $aksi   = $_POST['aksi'] ?? '';
-    $menuId = (int) ($_POST['menu_id'] ?? 0);
-    $ajax   = ($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '') === 'fetch';
-    $pesan  = '';
+    $aksi  = $_POST['aksi'] ?? '';
+    $ajax  = ($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '') === 'fetch';
+    $pesan = '';
 
-    if ($aksi === 'tambah' && $menuId > 0) {
-        $cek = $db->prepare("SELECT nama FROM menu WHERE id = ? AND status = 'aktif'");
+    if ($aksi === 'tambah') {
+        $menuId = (int) ($_POST['menu_id'] ?? 0);
+        $jumlah = max(1, min(20, (int) ($_POST['jumlah'] ?? 1)));
+        $cek = $db->prepare("
+            SELECT m.nama, k.nama kategori FROM menu m
+            JOIN kategori k ON k.id = m.kategori_id
+            WHERE m.id = ? AND m.status = 'aktif'");
         $cek->execute([$menuId]);
-        if ($nama = $cek->fetchColumn()) {
-            $_SESSION['keranjang'][$menuId] = ($_SESSION['keranjang'][$menuId] ?? 0) + 1;
-            $pesan = $nama . ' masuk keranjang';
+        if ($m = $cek->fetch()) {
+            $minuman = in_array($m['kategori'], KATEGORI_MINUMAN, true);
+            $ukuran  = $saji = $gula = null;
+            if ($minuman) {
+                $ukuran = array_key_exists($_POST['ukuran'] ?? '', UKURAN_OPSI) ? $_POST['ukuran'] : 'Regular';
+                $saji   = in_array($_POST['saji'] ?? '', SAJI_OPSI, true) ? $_POST['saji'] : 'Dingin';
+                $gula   = in_array($_POST['gula'] ?? '', GULA_OPSI, true) ? $_POST['gula'] : 'Normal Sugar';
+            }
+            $key = kunci_keranjang($menuId, $ukuran, $saji, $gula);
+            if (isset($_SESSION['keranjang'][$key])) {
+                $_SESSION['keranjang'][$key]['jumlah'] += $jumlah;
+            } else {
+                $_SESSION['keranjang'][$key] = [
+                    'menu_id' => $menuId, 'jumlah' => $jumlah,
+                    'ukuran' => $ukuran, 'saji' => $saji, 'gula' => $gula,
+                ];
+            }
+            $pesan = $m['nama'] . ' masuk keranjang';
         }
-    } elseif ($aksi === 'kurang' && isset($_SESSION['keranjang'][$menuId])) {
-        if (--$_SESSION['keranjang'][$menuId] <= 0) unset($_SESSION['keranjang'][$menuId]);
+    } elseif ($aksi === 'plus') {
+        $key = $_POST['key'] ?? '';
+        if (isset($_SESSION['keranjang'][$key])) $_SESSION['keranjang'][$key]['jumlah']++;
+    } elseif ($aksi === 'kurang') {
+        $key = $_POST['key'] ?? '';
+        if (isset($_SESSION['keranjang'][$key]) && --$_SESSION['keranjang'][$key]['jumlah'] <= 0) {
+            unset($_SESSION['keranjang'][$key]);
+        }
     } elseif ($aksi === 'hapus') {
-        unset($_SESSION['keranjang'][$menuId]);
+        unset($_SESSION['keranjang'][$_POST['key'] ?? '']);
     } elseif ($aksi === 'kosongkan') {
         $_SESSION['keranjang'] = [];
     }
@@ -59,25 +84,28 @@ require __DIR__ . '/includes/site_top.php';
         <?php endif; ?>
         <div style="flex:1;min-width:0">
           <div style="font-weight:700;font-size:13.5px"><?= e($it['nama']) ?></div>
-          <div style="color:var(--primary-dark);font-weight:800;font-size:13.5px;margin-top:2px"><?= rupiah($it['harga']) ?></div>
+          <?php if ($it['opsi_label']): ?>
+            <div style="font-size:11.5px;color:var(--ink-muted);margin-top:1px"><?= e($it['opsi_label']) ?></div>
+          <?php endif; ?>
+          <div style="color:var(--primary-dark);font-weight:800;font-size:13.5px;margin-top:2px"><?= rupiah($it['harga_satuan']) ?></div>
         </div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
           <div class="stepper">
             <form method="post" style="display:contents">
               <input type="hidden" name="aksi" value="kurang">
-              <input type="hidden" name="menu_id" value="<?= $it['id'] ?>">
+              <input type="hidden" name="key" value="<?= e($it['key']) ?>">
               <button aria-label="Kurangi">−</button>
             </form>
             <span class="qty"><?= $it['jumlah'] ?></span>
             <form method="post" style="display:contents">
-              <input type="hidden" name="aksi" value="tambah">
-              <input type="hidden" name="menu_id" value="<?= $it['id'] ?>">
+              <input type="hidden" name="aksi" value="plus">
+              <input type="hidden" name="key" value="<?= e($it['key']) ?>">
               <button aria-label="Tambah">+</button>
             </form>
           </div>
           <form method="post">
             <input type="hidden" name="aksi" value="hapus">
-            <input type="hidden" name="menu_id" value="<?= $it['id'] ?>">
+            <input type="hidden" name="key" value="<?= e($it['key']) ?>">
             <button style="border:0;background:none;color:#b3403f;font-size:12px;font-weight:600;cursor:pointer">
               <i class="bi bi-trash"></i> Hapus
             </button>

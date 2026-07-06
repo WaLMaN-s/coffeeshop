@@ -66,6 +66,7 @@ CREATE TABLE pesanan_item (
   id INT AUTO_INCREMENT PRIMARY KEY,
   pesanan_id INT NOT NULL,
   menu_id INT NOT NULL,
+  opsi VARCHAR(255) DEFAULT NULL, -- contoh: "Large - Dingin - No Sugar"
   jumlah INT NOT NULL DEFAULT 1,
   harga DECIMAL(12,0) NOT NULL DEFAULT 0,
   CONSTRAINT fk_item_pesanan FOREIGN KEY (pesanan_id) REFERENCES pesanan(id) ON DELETE CASCADE,

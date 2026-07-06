@@ -27,6 +27,16 @@ $activeNav = 'beranda';
 require __DIR__ . '/includes/site_top.php';
 ?>
 
+<?php if (pelanggan_masuk()): ?>
+  <div class="salam-user">
+    <span class="salam-emoji">👋</span>
+    <div>
+      <div class="salam-teks">Mari ngopi, <b><?= e($_SESSION['pelanggan_nama']) ?></b>!</div>
+      <div class="salam-sub">Mau pesan apa hari ini?</div>
+    </div>
+  </div>
+<?php endif; ?>
+
 <?php if ($q === '' && $fkat === 0): ?>
 <div class="banner-toko">
   <?php if (!empty($pengaturan['banner'])): ?>
@@ -70,8 +80,16 @@ require __DIR__ . '/includes/site_top.php';
   <?php foreach ($kelompok as $namaKategori => $items): ?>
     <?php if (count($kelompok) > 1): ?><div class="judul-bagian"><?= e($namaKategori) ?></div><?php endif; ?>
     <div class="grid-menu" style="margin-bottom:16px">
-      <?php foreach ($items as $m): ?>
-        <div class="kartu-menu">
+      <?php foreach ($items as $m):
+        $dataItem = json_encode([
+            'id'      => (int) $m['id'],
+            'nama'    => $m['nama'],
+            'harga'   => (float) $m['harga'],
+            'foto'    => $m['foto'] ? 'uploads/menu/' . $m['foto'] : null,
+            'minuman' => in_array($m['kategori'], KATEGORI_MINUMAN, true),
+        ], JSON_HEX_APOS | JSON_HEX_QUOT);
+      ?>
+        <div class="kartu-menu" data-item='<?= $dataItem ?>' style="cursor:pointer">
           <?php if ($m['foto']): ?>
             <img class="foto" src="uploads/menu/<?= e($m['foto']) ?>" alt="<?= e($m['nama']) ?>" loading="lazy">
           <?php else: ?>
@@ -82,7 +100,7 @@ require __DIR__ . '/includes/site_top.php';
             <?php if ($m['deskripsi']): ?><div class="ket"><?= e($m['deskripsi']) ?></div><?php endif; ?>
             <div class="bawah">
               <span class="harga"><?= rupiah($m['harga']) ?></span>
-              <button class="btn-tambah" data-tambah="<?= $m['id'] ?>" aria-label="Tambah <?= e($m['nama']) ?>">
+              <button class="btn-tambah" aria-label="Tambah <?= e($m['nama']) ?>">
                 <i class="bi bi-plus-lg"></i>
               </button>
             </div>

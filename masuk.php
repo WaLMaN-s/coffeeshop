@@ -54,9 +54,7 @@ require __DIR__ . '/includes/site_top.php';
 <div class="auth-wrap" style="padding:0">
   <div class="auth-kartu" style="margin-top:20px">
     <h1 style="font-size:20px;font-weight:800;margin:0 0 4px">Masuk</h1>
-    <p style="color:var(--ink-muted);font-size:13.5px;margin:0 0 20px">
-      Satu pintu untuk pelanggan &amp; admin — akun admin otomatis diarahkan ke panel admin.
-    </p>
+    <p style="color:var(--ink-muted);font-size:13.5px;margin:0 0 20px">Masuk untuk mulai memesan.</p>
 
     <?php if ($sedangAdmin): ?>
       <div class="pesan-info" style="margin-top:0;background:var(--primary-soft);color:var(--primary-dark)">
@@ -73,9 +71,9 @@ require __DIR__ . '/includes/site_top.php';
     <form method="post">
       <?php if ($lanjut): ?><input type="hidden" name="lanjut" value="<?= e($lanjut) ?>"><?php endif; ?>
       <div class="form-grup">
-        <label>Email (pelanggan) / Username (admin)</label>
+        <label>Email atau Username</label>
         <input type="text" name="identitas" class="input" required autofocus
-               placeholder="email@kamu.com atau username" value="<?= e($_POST['identitas'] ?? '') ?>">
+               value="<?= e($_POST['identitas'] ?? '') ?>">
       </div>
       <div class="form-grup">
         <label>Password</label>
