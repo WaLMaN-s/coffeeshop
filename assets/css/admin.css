@@ -1,0 +1,249 @@
+/* ============================================================
+   LORONG KOPI Admin — tema modern (terinspirasi Filament)
+   ============================================================ */
+:root {
+  --bg:            #f6f7f9;
+  --surface:       #ffffff;
+  --border:        rgba(11, 11, 11, 0.08);
+  --ink:           #0b0b0b;
+  --ink-2:         #52514e;
+  --ink-muted:     #898781;
+  --grid:          #e1e0d9;
+  --primary:       #2a78d6;
+  --primary-soft:  #e8f1fc;
+  --primary-dark:  #1c5cab;
+  --radius:        14px;
+  --sidebar-w:     250px;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-size: 14.5px;
+}
+a { text-decoration: none; }
+
+/* ---------- Layout ---------- */
+.layout { display: flex; min-height: 100vh; }
+.main   { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.content{ padding: 24px 28px 48px; flex: 1; }
+
+/* ---------- Sidebar ---------- */
+.sidebar {
+  width: var(--sidebar-w);
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  position: sticky; top: 0; height: 100vh;
+  flex-shrink: 0;
+  z-index: 1040;
+}
+.sidebar-brand {
+  display: flex; align-items: center; gap: 12px;
+  padding: 20px 20px 16px;
+  font-weight: 800; font-size: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.brand-icon {
+  width: 38px; height: 38px; border-radius: 10px;
+  background: var(--primary); color: #fff;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+.brand-logo { width: 38px; height: 38px; border-radius: 10px; object-fit: cover; }
+.brand-name { line-height: 1.2; }
+.sidebar-nav { padding: 14px 12px; overflow-y: auto; flex: 1; }
+.nav-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 14px; margin-bottom: 2px;
+  border-radius: 10px;
+  color: var(--ink-2); font-weight: 500;
+  transition: background .15s, color .15s;
+}
+.nav-item i { font-size: 17px; width: 20px; text-align: center; }
+.nav-item:hover  { background: var(--bg); color: var(--ink); }
+.nav-item.active { background: var(--primary-soft); color: var(--primary-dark); font-weight: 600; }
+.nav-logout { color: #b3403f; }
+.nav-logout:hover { background: #fdeeee; color: #b3403f; }
+.sidebar-sep { height: 1px; background: var(--border); margin: 12px 6px; }
+.sidebar-backdrop {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.35); z-index: 1035;
+}
+.sidebar-backdrop.show { display: block; }
+
+@media (max-width: 991.98px) {
+  .sidebar {
+    position: fixed; left: 0; top: 0;
+    transform: translateX(-100%);
+    transition: transform .2s ease;
+  }
+  .sidebar.open { transform: translateX(0); }
+}
+
+/* ---------- Topbar ---------- */
+.topbar {
+  height: 64px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 14px;
+  padding: 0 28px;
+  position: sticky; top: 0; z-index: 1020;
+}
+.topbar-title { font-weight: 700; font-size: 17px; }
+.topbar-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.btn-icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  border: 1px solid var(--border); background: var(--surface);
+  color: var(--ink-2); font-size: 18px;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.btn-icon:hover { background: var(--bg); }
+.notif-badge {
+  position: absolute; top: -5px; right: -5px;
+  min-width: 19px; height: 19px; padding: 0 5px;
+  border-radius: 10px; background: #d03b3b; color: #fff;
+  font-size: 11px; font-weight: 700;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.topbar-user { display: flex; align-items: center; gap: 10px; font-weight: 600; }
+.avatar {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: var(--primary); color: #fff;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-weight: 700;
+}
+
+/* ---------- Notifikasi dropdown ---------- */
+.notif-menu { width: 340px; padding: 0; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; box-shadow: 0 12px 32px rgba(0,0,0,.12); }
+.notif-head { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border); font-weight: 700; }
+.notif-clear { border: 0; background: none; color: var(--primary); font-size: 13px; font-weight: 600; }
+.notif-list { max-height: 320px; overflow-y: auto; }
+.notif-item { display: flex; gap: 12px; padding: 12px 16px; color: var(--ink); border-bottom: 1px solid var(--border); }
+.notif-item:hover { background: var(--bg); }
+.notif-item.baru { background: var(--primary-soft); }
+.notif-item i { font-size: 17px; color: var(--primary); margin-top: 2px; }
+.notif-pesan { font-size: 13.5px; font-weight: 500; }
+.notif-waktu { font-size: 12px; color: var(--ink-muted); margin-top: 2px; }
+.notif-empty { padding: 28px 16px; text-align: center; color: var(--ink-muted); font-size: 13.5px; }
+
+/* ---------- Kartu ---------- */
+.card-k {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 1px 2px rgba(11,11,11,.03);
+}
+.card-k .card-head {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  font-weight: 700; font-size: 15px;
+}
+.card-k .card-body-k { padding: 20px; }
+
+/* ---------- Stat tile ---------- */
+.stat-tile {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  display: flex; align-items: center; gap: 16px;
+  height: 100%;
+}
+.stat-icon {
+  width: 46px; height: 46px; border-radius: 12px; flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 20px;
+}
+.stat-label { font-size: 13px; color: var(--ink-2); font-weight: 500; }
+.stat-value { font-size: 21px; font-weight: 800; line-height: 1.25; }
+.ic-blue   { background: #e8f1fc; color: #1c5cab; }
+.ic-green  { background: #e5f5ef; color: #0e7a55; }
+.ic-yellow { background: #fdf3dd; color: #9a6a00; }
+.ic-violet { background: #edeafb; color: #4a3aa7; }
+.ic-red    { background: #fdeeee; color: #b3403f; }
+.ic-aqua   { background: #e2f6ee; color: #12734f; }
+
+/* ---------- Tabel ---------- */
+.table-k { margin: 0; font-size: 14px; }
+.table-k thead th {
+  background: var(--bg);
+  color: var(--ink-2);
+  font-size: 12.5px; text-transform: uppercase; letter-spacing: .4px;
+  font-weight: 600; border-bottom: 1px solid var(--border);
+  padding: 12px 16px; white-space: nowrap;
+}
+.table-k tbody td { padding: 12px 16px; vertical-align: middle; border-bottom: 1px solid var(--border); }
+.table-k tbody tr:last-child td { border-bottom: 0; }
+.table-k tbody tr:hover { background: #fafafa; }
+.angka { font-variant-numeric: tabular-nums; }
+
+/* ---------- Badge status ---------- */
+.badge-status {
+  display: inline-flex; align-items: center;
+  padding: 4px 11px; border-radius: 999px;
+  font-size: 12px; font-weight: 600; white-space: nowrap;
+}
+.badge-menunggu { background: #fdf3dd; color: #9a6a00; }
+.badge-diproses { background: #e8f1fc; color: #1c5cab; }
+.badge-siap     { background: #edeafb; color: #4a3aa7; }
+.badge-selesai  { background: #e5f5ef; color: #0e7a55; }
+.badge-batal    { background: #fdeeee; color: #b3403f; }
+
+/* ---------- Form & tombol ---------- */
+.btn-primary {
+  --bs-btn-bg: var(--primary); --bs-btn-border-color: var(--primary);
+  --bs-btn-hover-bg: var(--primary-dark); --bs-btn-hover-border-color: var(--primary-dark);
+  --bs-btn-active-bg: var(--primary-dark); --bs-btn-active-border-color: var(--primary-dark);
+  font-weight: 600;
+}
+.btn-outline-primary {
+  --bs-btn-color: var(--primary); --bs-btn-border-color: var(--primary);
+  --bs-btn-hover-bg: var(--primary); --bs-btn-hover-border-color: var(--primary);
+  font-weight: 600;
+}
+.form-control, .form-select { border-radius: 10px; border-color: rgba(11,11,11,.14); padding: 8px 13px; font-size: 14px; }
+.form-control:focus, .form-select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(42,120,214,.15); }
+.form-label { font-weight: 600; font-size: 13.5px; margin-bottom: 6px; }
+.btn { border-radius: 10px; }
+.modal-content { border-radius: var(--radius); border: 1px solid var(--border); }
+
+/* ---------- Foto menu ---------- */
+.foto-menu {
+  width: 46px; height: 46px; border-radius: 10px; object-fit: cover;
+  border: 1px solid var(--border);
+}
+.foto-placeholder {
+  width: 46px; height: 46px; border-radius: 10px;
+  background: var(--bg); color: var(--ink-muted);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 18px; border: 1px solid var(--border);
+}
+
+/* ---------- Halaman login ---------- */
+.login-page {
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(160deg, #f6f7f9 0%, #e8f1fc 100%);
+  padding: 20px;
+}
+.login-card {
+  width: 100%; max-width: 400px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 36px 34px;
+  box-shadow: 0 18px 50px rgba(28,92,171,.10);
+}
+
+/* ---------- Cetak (Laporan → PDF) ---------- */
+@media print {
+  .sidebar, .topbar, .no-print, .sidebar-backdrop { display: none !important; }
+  .content { padding: 0; }
+  body { background: #fff; font-size: 12px; }
+  .card-k, .stat-tile { border: 1px solid #ccc; box-shadow: none; break-inside: avoid; }
+}

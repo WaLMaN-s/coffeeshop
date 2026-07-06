@@ -1,0 +1,145 @@
+-- =====================================================
+-- LORONG KOPI - Sistem Pemesanan Coffee Shop
+-- Database: MariaDB / MySQL
+-- Import: mysql -u root < database.sql
+-- =====================================================
+
+CREATE DATABASE IF NOT EXISTS lorongkopi_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE lorongkopi_db;
+
+-- ---------- ADMIN ----------
+CREATE TABLE admin (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  username VARCHAR(50) NOT NULL UNIQUE,
+  password VARCHAR(255) NOT NULL,
+  nama VARCHAR(100) NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+-- ---------- KATEGORI ----------
+CREATE TABLE kategori (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nama VARCHAR(100) NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+-- ---------- MENU ----------
+CREATE TABLE menu (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  kategori_id INT NOT NULL,
+  nama VARCHAR(150) NOT NULL,
+  harga DECIMAL(12,0) NOT NULL DEFAULT 0,
+  deskripsi TEXT,
+  foto VARCHAR(255) DEFAULT NULL,
+  status ENUM('aktif','nonaktif') NOT NULL DEFAULT 'aktif',
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_menu_kategori FOREIGN KEY (kategori_id) REFERENCES kategori(id)
+) ENGINE=InnoDB;
+
+-- ---------- PELANGGAN ----------
+CREATE TABLE pelanggan (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nama VARCHAR(100) NOT NULL,
+  email VARCHAR(100) UNIQUE,
+  no_hp VARCHAR(20),
+  password VARCHAR(255),
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+-- ---------- PESANAN ----------
+CREATE TABLE pesanan (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nomor_pesanan VARCHAR(30) NOT NULL UNIQUE,
+  pelanggan_id INT NOT NULL,
+  total DECIMAL(12,0) NOT NULL DEFAULT 0,
+  status ENUM('menunggu','diproses','siap','selesai','dibatalkan') NOT NULL DEFAULT 'menunggu',
+  catatan TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_pesanan_pelanggan FOREIGN KEY (pelanggan_id) REFERENCES pelanggan(id)
+) ENGINE=InnoDB;
+
+CREATE INDEX idx_pesanan_tanggal ON pesanan (created_at);
+CREATE INDEX idx_pesanan_status ON pesanan (status);
+
+-- ---------- ITEM PESANAN ----------
+CREATE TABLE pesanan_item (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  pesanan_id INT NOT NULL,
+  menu_id INT NOT NULL,
+  jumlah INT NOT NULL DEFAULT 1,
+  harga DECIMAL(12,0) NOT NULL DEFAULT 0,
+  CONSTRAINT fk_item_pesanan FOREIGN KEY (pesanan_id) REFERENCES pesanan(id) ON DELETE CASCADE,
+  CONSTRAINT fk_item_menu FOREIGN KEY (menu_id) REFERENCES menu(id)
+) ENGINE=InnoDB;
+
+-- ---------- PEMBAYARAN ----------
+CREATE TABLE pembayaran (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  pesanan_id INT NOT NULL,
+  metode ENUM('cash','qris') NOT NULL DEFAULT 'cash',
+  jumlah DECIMAL(12,0) NOT NULL DEFAULT 0,
+  status ENUM('belum_dibayar','sudah_dibayar','gagal') NOT NULL DEFAULT 'belum_dibayar',
+  tanggal_bayar DATETIME NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_bayar_pesanan FOREIGN KEY (pesanan_id) REFERENCES pesanan(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE INDEX idx_bayar_status ON pembayaran (status);
+CREATE INDEX idx_bayar_tanggal ON pembayaran (tanggal_bayar);
+
+-- ---------- PENGATURAN TOKO ----------
+CREATE TABLE pengaturan (
+  id INT PRIMARY KEY,
+  nama_toko VARCHAR(150) NOT NULL,
+  logo VARCHAR(255) DEFAULT NULL,
+  banner VARCHAR(255) DEFAULT NULL,
+  alamat TEXT,
+  whatsapp VARCHAR(25),
+  jam_operasional VARCHAR(100),
+  deskripsi TEXT
+) ENGINE=InnoDB;
+
+-- ---------- NOTIFIKASI ----------
+CREATE TABLE notifikasi (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  tipe ENUM('pesanan_baru','pembayaran','pesanan_batal') NOT NULL,
+  pesan VARCHAR(255) NOT NULL,
+  pesanan_id INT NULL,
+  dibaca TINYINT(1) NOT NULL DEFAULT 0,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+-- =====================================================
+-- SEED DATA
+-- =====================================================
+
+-- Login: admin / admin123
+INSERT INTO admin (username, password, nama) VALUES
+('admin', '$2y$10$W8xTDE80WMlL.JrAH8ybZufjP10djhImhj0gHHnH8C182XJpQ9a3G', 'Administrator');
+
+INSERT INTO kategori (nama) VALUES
+('Coffee'), ('Non Coffee'), ('Tea'), ('Snack');
+
+INSERT INTO menu (kategori_id, nama, harga, deskripsi, status) VALUES
+(1, 'Espresso', 15000, 'Single shot espresso dari biji arabika pilihan.', 'aktif'),
+(1, 'Americano', 18000, 'Espresso dengan air panas, rasa bold dan clean.', 'aktif'),
+(1, 'Cafe Latte', 25000, 'Espresso dengan steamed milk yang creamy.', 'aktif'),
+(1, 'Cappuccino', 25000, 'Espresso, steamed milk, dan foam tebal.', 'aktif'),
+(1, 'Kopi Susu Gula Aren', 22000, 'Es kopi susu dengan gula aren asli.', 'aktif'),
+(1, 'Caramel Macchiato', 28000, 'Espresso, susu, dan saus karamel manis.', 'aktif'),
+(1, 'V60 Manual Brew', 24000, 'Seduh manual V60, single origin nusantara.', 'aktif'),
+(1, 'Cold Brew', 23000, 'Kopi seduh dingin 12 jam, smooth dan segar.', 'aktif'),
+(2, 'Chocolate', 23000, 'Cokelat premium dengan susu segar.', 'aktif'),
+(2, 'Matcha Latte', 26000, 'Matcha grade premium dengan susu.', 'aktif'),
+(2, 'Red Velvet Latte', 24000, 'Red velvet creamy dengan susu segar.', 'aktif'),
+(3, 'Lemon Tea', 15000, 'Teh segar dengan perasan lemon asli.', 'aktif'),
+(3, 'Lychee Tea', 18000, 'Teh dengan buah leci segar.', 'aktif'),
+(3, 'Teh Tarik', 16000, 'Teh susu khas dengan tarikan creamy.', 'aktif'),
+(4, 'French Fries', 18000, 'Kentang goreng renyah dengan saus.', 'aktif'),
+(4, 'Pisang Goreng Keju', 17000, 'Pisang goreng dengan topping keju dan cokelat.', 'aktif'),
+(4, 'Croissant', 20000, 'Croissant butter renyah, hangat.', 'aktif'),
+(4, 'Roti Bakar Cokelat Keju', 19000, 'Roti bakar dengan cokelat dan keju melimpah.', 'aktif'),
+(4, 'Donat Gula', 12000, 'Donat empuk dengan taburan gula halus.', 'aktif');
+
+INSERT INTO pengaturan (id, nama_toko, alamat, whatsapp, jam_operasional, deskripsi) VALUES
+(1, 'Lorong Kopi', 'Jl. Margasatwa No.9, Cilandak Timur, Pasar Minggu, Kota Jakarta Selatan, DKI Jakarta 12560', '6287878778748', '07.00 - 23.00 WIB', 'Kedai kopi dengan suasana hangat, kopi berkualitas, dan harga bersahabat.');
