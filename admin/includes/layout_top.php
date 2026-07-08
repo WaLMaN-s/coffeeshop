@@ -4,6 +4,7 @@ $menuSidebar = [
     'dashboard'  => ['index.php',      'bi-grid-1x2',        'Dashboard'],
     'menu'       => ['menu.php',       'bi-cup-hot',         'Menu'],
     'kategori'   => ['kategori.php',   'bi-tags',            'Kategori'],
+    'meja'       => ['meja.php',       'bi-qr-code',         'Meja & QR'],
     'pesanan'    => ['pesanan.php',    'bi-receipt',         'Pesanan'],
     'pembayaran' => ['pembayaran.php', 'bi-credit-card',     'Pembayaran'],
     'pelanggan'  => ['pelanggan.php',  'bi-people',          'Pelanggan'],

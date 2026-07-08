@@ -4,7 +4,7 @@ require_once __DIR__ . '/includes/init.php';
 /* ---------- Statistik kartu ---------- */
 $totalMenu      = (int) $db->query('SELECT COUNT(*) FROM menu')->fetchColumn();
 $totalKategori  = (int) $db->query('SELECT COUNT(*) FROM kategori')->fetchColumn();
-$totalPelanggan = (int) $db->query('SELECT COUNT(*) FROM pelanggan')->fetchColumn();
+$totalMejaAktif = (int) $db->query("SELECT COUNT(*) FROM meja WHERE status = 'aktif'")->fetchColumn();
 
 $pesananHariIni = (int) $db->query("SELECT COUNT(*) FROM pesanan WHERE DATE(created_at) = CURDATE()")->fetchColumn();
 $pesananSelesai = (int) $db->query("SELECT COUNT(*) FROM pesanan WHERE status = 'selesai'")->fetchColumn();
@@ -63,8 +63,10 @@ $maxTerjual = $terlaris ? max(array_column($terlaris, 'terjual')) : 1;
 
 /* ---------- 5 pesanan terbaru ---------- */
 $terbaru = $db->query("
-    SELECT p.*, pl.nama pelanggan
-    FROM pesanan p JOIN pelanggan pl ON pl.id = p.pelanggan_id
+    SELECT p.*, COALESCE(pl.nama, p.nama_tamu, 'Tamu') pelanggan, m.nomor_meja
+    FROM pesanan p
+    LEFT JOIN pelanggan pl ON pl.id = p.pelanggan_id
+    LEFT JOIN meja m ON m.id = p.meja_id
     ORDER BY p.created_at DESC LIMIT 5")->fetchAll();
 
 $pageTitle = 'Dashboard';
@@ -78,7 +80,7 @@ require __DIR__ . '/includes/layout_top.php';
   $statCards = [
       ['bi-cup-hot',        'ic-blue',   'Total Menu',            $totalMenu],
       ['bi-tags',           'ic-violet', 'Total Kategori',        $totalKategori],
-      ['bi-people',         'ic-aqua',   'Total Pelanggan',       $totalPelanggan],
+      ['bi-qr-code',        'ic-aqua',   'Meja Aktif',            $totalMejaAktif],
       ['bi-receipt',        'ic-yellow', 'Pesanan Hari Ini',      $pesananHariIni],
       ['bi-check2-circle',  'ic-green',  'Pesanan Selesai',       $pesananSelesai],
       ['bi-arrow-repeat',   'ic-blue',   'Pesanan Diproses',      $pesananProses],
@@ -152,7 +154,10 @@ require __DIR__ . '/includes/layout_top.php';
           <?php else: foreach ($terbaru as $p): ?>
             <tr>
               <td><a href="pesanan_detail.php?id=<?= $p['id'] ?>" class="fw-semibold" style="color:var(--primary)"><?= e($p['nomor_pesanan']) ?></a></td>
-              <td><?= e($p['pelanggan']) ?></td>
+              <td>
+                <?= e($p['pelanggan']) ?>
+                <?php if ($p['nomor_meja']): ?><span class="text-secondary" style="font-size:12px">· Meja <?= e($p['nomor_meja']) ?></span><?php endif; ?>
+              </td>
               <td class="angka"><?= rupiah($p['total']) ?></td>
               <td><?= badge_status_pesanan($p['status']) ?></td>
               <td class="text-secondary" style="font-size:13px"><?= tanggal_id($p['created_at'], true) ?></td>

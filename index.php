@@ -1,6 +1,11 @@
 <?php
 require_once __DIR__ . '/includes/site_init.php';
 
+if (!meja_aktif()) {
+    header('Location: meja.php');
+    exit;
+}
+
 $q    = trim($_GET['q'] ?? '');
 $fkat = (int) ($_GET['kategori'] ?? 0);
 
@@ -27,15 +32,13 @@ $activeNav = 'beranda';
 require __DIR__ . '/includes/site_top.php';
 ?>
 
-<?php if (pelanggan_masuk()): ?>
-  <div class="salam-user">
-    <span class="salam-emoji">👋</span>
-    <div>
-      <div class="salam-teks">Mari ngopi, <b><?= e($_SESSION['pelanggan_nama']) ?></b>!</div>
-      <div class="salam-sub">Mau pesan apa hari ini?</div>
-    </div>
+<div class="salam-user">
+  <span class="salam-emoji">👋</span>
+  <div>
+    <div class="salam-teks">Mari ngopi, <b><?= e($_SESSION['meja']['nama']) ?></b>!</div>
+    <div class="salam-sub">Meja <?= e($_SESSION['meja']['nomor_meja']) ?> · Mau pesan apa hari ini?</div>
   </div>
-<?php endif; ?>
+</div>
 
 <?php if ($q === '' && $fkat === 0): ?>
 <div class="banner-toko">

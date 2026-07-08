@@ -1,6 +1,11 @@
 <?php
 require_once __DIR__ . '/includes/site_init.php';
 
+if (!meja_aktif()) {
+    header('Location: meja.php');
+    exit;
+}
+
 /* ---------- Aksi keranjang ---------- */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $aksi  = $_POST['aksi'] ?? '';

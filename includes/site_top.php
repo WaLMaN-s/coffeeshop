@@ -50,13 +50,9 @@ $navLinks = [
         </a>
       <?php endforeach; ?>
     </nav>
-    <?php if (pelanggan_masuk()): ?>
-      <a href="keluar.php" class="btn-keluar" title="Keluar (<?= e($_SESSION['pelanggan_nama']) ?>)">
-        <i class="bi bi-box-arrow-right"></i><span class="btn-keluar-teks">Keluar</span>
-      </a>
-    <?php else: ?>
-      <a href="masuk.php" class="btn-keluar btn-masuk" title="Masuk">
-        <i class="bi bi-box-arrow-in-right"></i><span class="btn-keluar-teks">Masuk</span>
+    <?php if (meja_aktif()): ?>
+      <a href="keluar.php" class="btn-keluar" title="Akhiri sesi meja" onclick="return confirm('Akhiri sesi Meja <?= e($_SESSION['meja']['nomor_meja']) ?>?')">
+        <i class="bi bi-table"></i><span class="btn-keluar-teks">Meja <?= e($_SESSION['meja']['nomor_meja']) ?></span>
       </a>
     <?php endif; ?>
   </div>

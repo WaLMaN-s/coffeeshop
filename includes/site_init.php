@@ -64,7 +64,8 @@ function isi_keranjang(PDO $db): array
     return $hasil;
 }
 
-function pelanggan_masuk(): bool
+/** Sesi tamu aktif = sudah scan QR meja & isi nama. */
+function meja_aktif(): bool
 {
-    return !empty($_SESSION['pelanggan_id']);
+    return !empty($_SESSION['meja']['meja_id']);
 }

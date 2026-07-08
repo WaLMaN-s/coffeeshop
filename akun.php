@@ -1,52 +1,22 @@
 <?php
 require_once __DIR__ . '/includes/site_init.php';
 
-if (!pelanggan_masuk()) {
-    header('Location: masuk.php?lanjut=akun.php');
+if (!meja_aktif()) {
+    header('Location: meja.php');
     exit;
 }
 
-$plId = (int) $_SESSION['pelanggan_id'];
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $aksi = $_POST['aksi'] ?? '';
-
-    if ($aksi === 'profil') {
-        $nama = trim($_POST['nama'] ?? '');
-        $noHp = trim($_POST['no_hp'] ?? '');
-        if ($nama === '') {
-            set_flash('gagal', 'Nama wajib diisi.');
-        } else {
-            $db->prepare('UPDATE pelanggan SET nama = ?, no_hp = ? WHERE id = ?')->execute([$nama, $noHp ?: null, $plId]);
-            $_SESSION['pelanggan_nama'] = $nama;
-            set_flash('sukses', 'Profil diperbarui.');
-        }
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['aksi'] ?? '') === 'ganti_nama') {
+    $nama = trim($_POST['nama'] ?? '');
+    if ($nama === '') {
+        set_flash('gagal', 'Nama wajib diisi.');
+    } else {
+        $_SESSION['meja']['nama'] = $nama;
+        set_flash('sukses', 'Nama diperbarui.');
     }
-
-    if ($aksi === 'password') {
-        $lama = $_POST['password_lama'] ?? '';
-        $baru = $_POST['password_baru'] ?? '';
-        $stmt = $db->prepare('SELECT password FROM pelanggan WHERE id = ?');
-        $stmt->execute([$plId]);
-        $hash = $stmt->fetchColumn();
-        if (!$hash || !password_verify($lama, $hash)) {
-            set_flash('gagal', 'Password lama salah.');
-        } elseif (strlen($baru) < 6) {
-            set_flash('gagal', 'Password baru minimal 6 karakter.');
-        } else {
-            $db->prepare('UPDATE pelanggan SET password = ? WHERE id = ?')
-               ->execute([password_hash($baru, PASSWORD_DEFAULT), $plId]);
-            set_flash('sukses', 'Password berhasil diganti.');
-        }
-    }
-
     header('Location: akun.php');
     exit;
 }
-
-$stmt = $db->prepare('SELECT * FROM pelanggan WHERE id = ?');
-$stmt->execute([$plId]);
-$saya = $stmt->fetch();
 
 $pageTitle = 'Akun Saya';
 $activeNav = 'akun';
@@ -55,46 +25,26 @@ require __DIR__ . '/includes/site_top.php';
 
 <div class="kartu" style="margin-top:18px;display:flex;align-items:center;gap:14px">
   <span class="logo-ikon" style="width:52px;height:52px;font-size:22px;border-radius:50%">
-    <?= strtoupper(substr($saya['nama'], 0, 1)) ?>
+    <?= strtoupper(substr($_SESSION['meja']['nama'], 0, 1)) ?>
   </span>
   <div style="flex:1">
-    <div style="font-weight:800;font-size:16px"><?= e($saya['nama']) ?></div>
-    <div style="font-size:12.5px;color:var(--ink-muted)"><?= e($saya['email']) ?></div>
+    <div style="font-weight:800;font-size:16px"><?= e($_SESSION['meja']['nama']) ?></div>
+    <div style="font-size:12.5px;color:var(--ink-muted)"><i class="bi bi-table"></i> Meja <?= e($_SESSION['meja']['nomor_meja']) ?></div>
   </div>
-  <a href="keluar.php" class="btn-keluar" style="margin-left:0">
+  <a href="keluar.php" class="btn-keluar" style="margin-left:0" onclick="return confirm('Akhiri sesi meja ini?')">
     <i class="bi bi-box-arrow-right"></i> Keluar
   </a>
 </div>
 
 <div class="kartu">
-  <div style="font-weight:700;margin-bottom:12px">Ubah Profil</div>
+  <div style="font-weight:700;margin-bottom:12px">Ubah Nama</div>
   <form method="post">
-    <input type="hidden" name="aksi" value="profil">
+    <input type="hidden" name="aksi" value="ganti_nama">
     <div class="form-grup">
       <label>Nama</label>
-      <input type="text" name="nama" class="input" required value="<?= e($saya['nama']) ?>">
-    </div>
-    <div class="form-grup">
-      <label>No. HP</label>
-      <input type="tel" name="no_hp" class="input" value="<?= e($saya['no_hp'] ?? '') ?>">
+      <input type="text" name="nama" class="input" required maxlength="100" value="<?= e($_SESSION['meja']['nama']) ?>">
     </div>
     <button class="btn-utama">Simpan</button>
-  </form>
-</div>
-
-<div class="kartu">
-  <div style="font-weight:700;margin-bottom:12px">Ganti Password</div>
-  <form method="post">
-    <input type="hidden" name="aksi" value="password">
-    <div class="form-grup">
-      <label>Password Lama</label>
-      <input type="password" name="password_lama" class="input" required>
-    </div>
-    <div class="form-grup">
-      <label>Password Baru <span style="font-weight:400;color:var(--ink-muted)">(min. 6 karakter)</span></label>
-      <input type="password" name="password_baru" class="input" required minlength="6">
-    </div>
-    <button class="btn-utama">Ganti Password</button>
   </form>
 </div>
 

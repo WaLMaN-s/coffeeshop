@@ -1,9 +1,8 @@
 <?php
 require_once __DIR__ . '/includes/site_init.php';
 
-if (!pelanggan_masuk()) {
-    set_flash('gagal', 'Masuk dulu untuk melihat pesananmu.');
-    header('Location: masuk.php?lanjut=pesanan_saya.php');
+if (!meja_aktif()) {
+    header('Location: meja.php');
     exit;
 }
 
@@ -12,9 +11,9 @@ $stmt = $db->prepare("
            (SELECT COUNT(*) FROM pesanan_item pi WHERE pi.pesanan_id = p.id) jumlah_item,
            (SELECT b.status FROM pembayaran b WHERE b.pesanan_id = p.id ORDER BY b.id DESC LIMIT 1) status_bayar,
            (SELECT b.metode FROM pembayaran b WHERE b.pesanan_id = p.id ORDER BY b.id DESC LIMIT 1) metode
-    FROM pesanan p WHERE p.pelanggan_id = ?
+    FROM pesanan p WHERE p.meja_id = ? AND p.sesi_kode = ?
     ORDER BY p.created_at DESC LIMIT 50");
-$stmt->execute([$_SESSION['pelanggan_id']]);
+$stmt->execute([$_SESSION['meja']['meja_id'], $_SESSION['meja']['sesi']]);
 $daftar = $stmt->fetchAll();
 
 $pageTitle = 'Pesanan Saya';

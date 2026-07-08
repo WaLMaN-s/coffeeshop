@@ -40,12 +40,16 @@ define('DB_NAME', 'if0_12345678_lorongkopi');      // nama database
 ```
 
 ## 6. Selesai
-- Buka `https://namadomainkamu.rf.gd/admin/` → login **admin / admin123**.
+- Buka `https://namadomainkamu.rf.gd/admin/login.php` → login **admin / admin123**.
 - Segera ganti password admin di database (tabel `admin`) atau minta
   dibuatkan halaman ganti password.
+- Buka menu **Meja & QR** di admin, lalu **Cetak Semua QR** untuk ditempel
+  di tiap meja fisik — QR-nya otomatis pakai domain hosting yang sekarang
+  diakses, tidak perlu diedit manual.
 - Data contoh (seed) bisa dipakai untuk demo; kalau mau mulai bersih,
   kosongkan tabel `pesanan`, `pesanan_item`, `pembayaran`, `pelanggan`,
-  `notifikasi` lewat phpMyAdmin.
+  `notifikasi` lewat phpMyAdmin (tabel `meja` jangan ikut dikosongkan,
+  itu daftar meja + QR yang sudah dicetak).
 
 ## Catatan lokal (perangkat ini)
 - Source code: `/home/MaN/WEB/lorongkopi` (master).

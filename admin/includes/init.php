@@ -2,7 +2,7 @@
 require_once dirname(__DIR__, 2) . '/config/config.php';
 
 if (empty($_SESSION['admin_id'])) {
-    header('Location: ../masuk.php');
+    header('Location: login.php');
     exit;
 }
 

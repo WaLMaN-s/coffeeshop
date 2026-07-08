@@ -21,8 +21,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['aksi'] ?? '') === 'ubah_st
 
 /* ---------- Data ---------- */
 $stmt = $db->prepare("
-    SELECT p.*, pl.nama pelanggan, pl.email, pl.no_hp
-    FROM pesanan p JOIN pelanggan pl ON pl.id = p.pelanggan_id
+    SELECT p.*, COALESCE(pl.nama, p.nama_tamu, 'Tamu') pelanggan, pl.email, pl.no_hp, m.nomor_meja
+    FROM pesanan p
+    LEFT JOIN pelanggan pl ON pl.id = p.pelanggan_id
+    LEFT JOIN meja m ON m.id = p.meja_id
     WHERE p.id = ?");
 $stmt->execute([$id]);
 $pesanan = $stmt->fetch();
@@ -107,8 +109,12 @@ require __DIR__ . '/includes/layout_top.php';
       <div class="card-body-k">
         <div class="fw-bold mb-1" style="font-size:15px"><?= e($pesanan['pelanggan']) ?></div>
         <div class="text-secondary" style="font-size:13.5px">
-          <div><i class="bi bi-envelope me-2"></i><?= e($pesanan['email'] ?: '-') ?></div>
-          <div><i class="bi bi-telephone me-2"></i><?= e($pesanan['no_hp'] ?: '-') ?></div>
+          <?php if ($pesanan['nomor_meja']): ?>
+            <div><i class="bi bi-table me-2"></i>Meja <?= e($pesanan['nomor_meja']) ?></div>
+          <?php else: ?>
+            <div><i class="bi bi-envelope me-2"></i><?= e($pesanan['email'] ?: '-') ?></div>
+            <div><i class="bi bi-telephone me-2"></i><?= e($pesanan['no_hp'] ?: '-') ?></div>
+          <?php endif; ?>
           <div><i class="bi bi-clock me-2"></i><?= tanggal_id($pesanan['created_at'], true) ?></div>
         </div>
       </div>

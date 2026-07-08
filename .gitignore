@@ -1,2 +1,5 @@
 .DS_Store
 *.log
+
+# QR meja dibuat otomatis per environment (encode URL host masing-masing)
+uploads/qrcode/*.png

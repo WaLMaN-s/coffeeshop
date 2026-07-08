@@ -1,14 +1,14 @@
 <?php
 require_once __DIR__ . '/includes/site_init.php';
 
-if (!pelanggan_masuk()) {
-    header('Location: masuk.php?lanjut=pesanan_saya.php');
+if (!meja_aktif()) {
+    header('Location: meja.php');
     exit;
 }
 
 $id = (int) ($_GET['id'] ?? 0);
-$stmt = $db->prepare('SELECT * FROM pesanan WHERE id = ? AND pelanggan_id = ?');
-$stmt->execute([$id, $_SESSION['pelanggan_id']]);
+$stmt = $db->prepare('SELECT * FROM pesanan WHERE id = ? AND meja_id = ? AND sesi_kode = ?');
+$stmt->execute([$id, $_SESSION['meja']['meja_id'], $_SESSION['meja']['sesi']]);
 $pesanan = $stmt->fetch();
 if (!$pesanan) {
     set_flash('gagal', 'Pesanan tidak ditemukan.');

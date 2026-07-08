@@ -28,7 +28,8 @@ $status = trim($_GET['status'] ?? '');
 $where  = [];
 $params = [];
 if ($q !== '') {
-    $where[]  = '(pl.nama LIKE ? OR p.nomor_pesanan LIKE ?)';
+    $where[]  = '(pl.nama LIKE ? OR p.nama_tamu LIKE ? OR p.nomor_pesanan LIKE ?)';
+    $params[] = "%$q%";
     $params[] = "%$q%";
     $params[] = "%$q%";
 }
@@ -39,10 +40,11 @@ if ($status !== '' && in_array($status, ['belum_dibayar', 'sudah_dibayar', 'gaga
 $sqlWhere = $where ? 'WHERE ' . implode(' AND ', $where) : '';
 
 $stmt = $db->prepare("
-    SELECT b.*, p.nomor_pesanan, p.id pesanan_id, pl.nama pelanggan
+    SELECT b.*, p.nomor_pesanan, p.id pesanan_id, COALESCE(pl.nama, p.nama_tamu, 'Tamu') pelanggan, m.nomor_meja
     FROM pembayaran b
     JOIN pesanan p ON p.id = b.pesanan_id
-    JOIN pelanggan pl ON pl.id = p.pelanggan_id
+    LEFT JOIN pelanggan pl ON pl.id = p.pelanggan_id
+    LEFT JOIN meja m ON m.id = p.meja_id
     $sqlWhere ORDER BY b.created_at DESC LIMIT 200");
 $stmt->execute($params);
 $daftar = $stmt->fetchAll();
@@ -79,7 +81,10 @@ require __DIR__ . '/includes/layout_top.php';
       <?php else: foreach ($daftar as $b): ?>
         <tr>
           <td><a href="pesanan_detail.php?id=<?= $b['pesanan_id'] ?>" class="fw-semibold" style="color:var(--primary)"><?= e($b['nomor_pesanan']) ?></a></td>
-          <td><?= e($b['pelanggan']) ?></td>
+          <td>
+            <?= e($b['pelanggan']) ?>
+            <?php if ($b['nomor_meja']): ?><span class="text-secondary" style="font-size:12px">· Meja <?= e($b['nomor_meja']) ?></span><?php endif; ?>
+          </td>
           <td class="text-uppercase fw-semibold" style="font-size:12.5px"><?= e($b['metode']) ?></td>
           <td class="angka fw-semibold"><?= rupiah($b['jumlah']) ?></td>
           <td class="text-secondary" style="font-size:13px"><?= $b['tanggal_bayar'] ? tanggal_id($b['tanggal_bayar'], true) : '-' ?></td>

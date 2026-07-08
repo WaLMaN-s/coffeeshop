@@ -36,7 +36,7 @@ CREATE TABLE menu (
   CONSTRAINT fk_menu_kategori FOREIGN KEY (kategori_id) REFERENCES kategori(id)
 ) ENGINE=InnoDB;
 
--- ---------- PELANGGAN ----------
+-- ---------- PELANGGAN (akun lama, dipertahankan untuk data historis) ----------
 CREATE TABLE pelanggan (
   id INT AUTO_INCREMENT PRIMARY KEY,
   nama VARCHAR(100) NOT NULL,
@@ -46,16 +46,29 @@ CREATE TABLE pelanggan (
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
+-- ---------- MEJA (QR dine-in) ----------
+CREATE TABLE meja (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nomor_meja VARCHAR(20) NOT NULL,
+  kode VARCHAR(40) NOT NULL UNIQUE,
+  status ENUM('aktif','nonaktif') NOT NULL DEFAULT 'aktif',
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
 -- ---------- PESANAN ----------
 CREATE TABLE pesanan (
   id INT AUTO_INCREMENT PRIMARY KEY,
   nomor_pesanan VARCHAR(30) NOT NULL UNIQUE,
-  pelanggan_id INT NOT NULL,
+  pelanggan_id INT NULL,
+  meja_id INT NULL,
+  nama_tamu VARCHAR(100) NULL,
+  sesi_kode VARCHAR(40) NULL,
   total DECIMAL(12,0) NOT NULL DEFAULT 0,
   status ENUM('menunggu','diproses','siap','selesai','dibatalkan') NOT NULL DEFAULT 'menunggu',
   catatan TEXT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  CONSTRAINT fk_pesanan_pelanggan FOREIGN KEY (pelanggan_id) REFERENCES pelanggan(id)
+  CONSTRAINT fk_pesanan_pelanggan FOREIGN KEY (pelanggan_id) REFERENCES pelanggan(id),
+  CONSTRAINT fk_pesanan_meja FOREIGN KEY (meja_id) REFERENCES meja(id)
 ) ENGINE=InnoDB;
 
 CREATE INDEX idx_pesanan_tanggal ON pesanan (created_at);
@@ -144,3 +157,16 @@ INSERT INTO menu (kategori_id, nama, harga, deskripsi, status) VALUES
 
 INSERT INTO pengaturan (id, nama_toko, alamat, whatsapp, jam_operasional, deskripsi) VALUES
 (1, 'Lorong Kopi', 'Jl. Margasatwa No.9, Cilandak Timur, Pasar Minggu, Kota Jakarta Selatan, DKI Jakarta 12560', '6287878778748', '07.00 - 23.00 WIB', 'Kedai kopi dengan suasana hangat, kopi berkualitas, dan harga bersahabat.');
+
+-- 10 meja siap pakai — cetak QR-nya dari Admin > Meja
+INSERT INTO meja (nomor_meja, kode, status) VALUES
+('1',  '3d7ac1f082afe7a1', 'aktif'),
+('2',  '206190c53d2bb852', 'aktif'),
+('3',  '4e918646da1126ff', 'aktif'),
+('4',  '342cbf53ef66d14a', 'aktif'),
+('5',  '25bdf2e71c4bed2c', 'aktif'),
+('6',  '82e8f9533e1c5a33', 'aktif'),
+('7',  '1fbda39c57778b99', 'aktif'),
+('8',  'a4883e26b29feb15', 'aktif'),
+('9',  '8d17376e53ce6592', 'aktif'),
+('10', 'aafb9043386c03b7', 'aktif');

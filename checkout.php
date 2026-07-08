@@ -1,9 +1,8 @@
 <?php
 require_once __DIR__ . '/includes/site_init.php';
 
-if (!pelanggan_masuk()) {
-    set_flash('gagal', 'Masuk dulu untuk menyelesaikan pesanan.');
-    header('Location: masuk.php?lanjut=checkout.php');
+if (!meja_aktif()) {
+    header('Location: meja.php');
     exit;
 }
 
@@ -23,8 +22,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $db->beginTransaction();
     try {
         $nomor = buat_nomor_pesanan($db);
-        $db->prepare('INSERT INTO pesanan (nomor_pesanan, pelanggan_id, total, status, catatan) VALUES (?,?,?,?,?)')
-           ->execute([$nomor, $_SESSION['pelanggan_id'], $total, 'menunggu', $catatan ?: null]);
+        $db->prepare('INSERT INTO pesanan (nomor_pesanan, meja_id, nama_tamu, sesi_kode, total, status, catatan) VALUES (?,?,?,?,?,?,?)')
+           ->execute([
+               $nomor,
+               $_SESSION['meja']['meja_id'],
+               $_SESSION['meja']['nama'],
+               $_SESSION['meja']['sesi'],
+               $total, 'menunggu', $catatan ?: null,
+           ]);
         $pesananId = (int) $db->lastInsertId();
 
         $stmtItem = $db->prepare('INSERT INTO pesanan_item (pesanan_id, menu_id, opsi, jumlah, harga) VALUES (?,?,?,?,?)');
@@ -35,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $db->prepare('INSERT INTO pembayaran (pesanan_id, metode, jumlah, status) VALUES (?,?,?,?)')
            ->execute([$pesananId, $metode, $total, 'belum_dibayar']);
 
-        tambah_notifikasi($db, 'pesanan_baru', "Pesanan baru $nomor dari " . $_SESSION['pelanggan_nama'] . '.', $pesananId);
+        tambah_notifikasi($db, 'pesanan_baru', 'Pesanan baru ' . $nomor . ' dari Meja ' . $_SESSION['meja']['nomor_meja'] . ' (' . $_SESSION['meja']['nama'] . ').', $pesananId);
         $db->commit();
 
         $_SESSION['keranjang'] = [];
