@@ -77,12 +77,29 @@
     <?= badge_status_bayar($bayar['status']) ?>
   </div>
   <?php if ($bayar['status'] === 'belum_dibayar' && !$batal): ?>
-    <div class="pesan-info" style="background:var(--primary-soft);color:var(--primary-dark);margin-bottom:0">
-      <i class="bi bi-info-circle"></i>
-      <?= $bayar['metode'] === 'qris'
-          ? 'Scan QRIS di kasir dan sebutkan nomor pesananmu untuk menyelesaikan pembayaran.'
-          : 'Bayar tunai di kasir sambil menyebutkan nomor pesananmu.' ?>
-    </div>
+    <?php if ($bayar['metode'] === 'qris' && !empty($pengaturan['qris_gambar'])): ?>
+      <!-- QRIS statis: pelanggan scan lalu ketik nominal sendiri -->
+      <div style="text-align:center;background:var(--bg);border-radius:14px;padding:16px 12px;margin-top:6px">
+        <div style="font-weight:800;font-size:14px;margin-bottom:2px">Scan QRIS di bawah ini</div>
+        <div style="font-size:12.5px;color:var(--ink-muted);margin-bottom:10px">
+          Buka aplikasi bank / e-wallet apa saja, scan, lalu <b>ketik nominal persis</b>:
+        </div>
+        <div style="font-weight:800;font-size:22px;color:var(--primary-dark);margin-bottom:10px"><?= rupiah($pesanan['total']) ?></div>
+        <img src="uploads/toko/<?= e($pengaturan['qris_gambar']) ?>" alt="QRIS"
+             style="width:100%;max-width:240px;border-radius:12px;border:1px solid var(--border);background:#fff">
+        <div style="font-size:12px;color:var(--ink-muted);margin-top:10px">
+          Setelah bayar, tunjukkan bukti ke kasir dengan menyebut <b>Antrian #<?= no_antrian($pesanan['nomor_pesanan']) ?></b> —
+          status berubah otomatis begitu kasir verifikasi.
+        </div>
+      </div>
+    <?php else: ?>
+      <div class="pesan-info" style="background:var(--primary-soft);color:var(--primary-dark);margin-bottom:0">
+        <i class="bi bi-info-circle"></i>
+        <?= $bayar['metode'] === 'qris'
+            ? 'Scan QRIS di kasir dan sebutkan nomor pesananmu untuk menyelesaikan pembayaran.'
+            : 'Bayar tunai di kasir sambil menyebutkan nomor pesananmu.' ?>
+      </div>
+    <?php endif; ?>
   <?php elseif ($bayar['status'] === 'sudah_dibayar'): ?>
     <div class="pesan-info pesan-sukses" style="margin-bottom:0">
       <i class="bi bi-check-circle-fill"></i>

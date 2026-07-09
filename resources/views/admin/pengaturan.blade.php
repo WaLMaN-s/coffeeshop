@@ -51,6 +51,27 @@
       </div>
 
       <div class="card-k mb-3">
+        <div class="card-head">QRIS Pembayaran</div>
+        <div class="card-body-k">
+          <p class="text-secondary" style="font-size:13px;margin-bottom:14px">
+            Upload gambar QRIS statis milikmu (dari Livin' Mandiri, GoPay/GoBiz, dll).
+            QR ini tampil di halaman pesanan pelanggan yang memilih bayar QRIS —
+            pelanggan scan lalu <b>mengetik nominal sesuai total pesanannya</b>,
+            kasir tinggal cek uang masuk lalu verifikasi.
+          </p>
+          <div class="row align-items-end">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Gambar QRIS <span class="text-secondary fw-normal">(JPG/PNG/WEBP, maks 2 MB)</span></label>
+              <?php if (!empty($p['qris_gambar'])): ?>
+                <div class="mb-2"><img src="../uploads/toko/<?= e($p['qris_gambar']) ?>" alt="QRIS" style="width:180px;border-radius:12px;border:1px solid var(--border);background:#fff"></div>
+              <?php endif; ?>
+              <input type="file" name="qris_gambar" class="form-control" accept=".jpg,.jpeg,.png,.webp">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-k mb-3">
         <div class="card-head">Logo &amp; Banner</div>
         <div class="card-body-k">
           <div class="row">

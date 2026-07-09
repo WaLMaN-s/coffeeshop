@@ -122,7 +122,8 @@ CREATE TABLE pengaturan (
   jam_operasional VARCHAR(100),
   deskripsi TEXT,
   wifi_ssid VARCHAR(100) DEFAULT NULL,
-  wifi_password VARCHAR(100) DEFAULT NULL
+  wifi_password VARCHAR(100) DEFAULT NULL,
+  qris_gambar VARCHAR(255) DEFAULT NULL -- gambar QRIS statis (pelanggan input nominal sendiri)
 ) ENGINE=InnoDB;
 
 -- ---------- NOTIFIKASI ----------

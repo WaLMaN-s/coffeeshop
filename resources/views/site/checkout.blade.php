@@ -34,7 +34,7 @@
         <input type="radio" name="metode" value="qris">
         <i class="bi bi-qr-code-scan" style="font-size:22px"></i>
         QRIS
-        <small>Scan QR di kasir</small>
+        <small>Scan QR, ketik nominalnya</small>
       </label>
     </div>
   </div>
