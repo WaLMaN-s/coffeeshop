@@ -12,6 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $harga     = (float) str_replace('.', '', $_POST['harga'] ?? '0');
         $deskripsi = trim($_POST['deskripsi'] ?? '');
         $status    = $_POST['status'] === 'nonaktif' ? 'nonaktif' : 'aktif';
+        $tanpaGula = !empty($_POST['tanpa_gula']) ? 1 : 0;
 
         if ($nama === '' || $kategori <= 0 || $harga <= 0) {
             set_flash('gagal', 'Nama, kategori, dan harga wajib diisi.');
@@ -25,16 +26,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $lama = $db->prepare('SELECT foto FROM menu WHERE id = ?');
                     $lama->execute([$id]);
                     hapus_gambar($lama->fetchColumn(), 'menu');
-                    $db->prepare('UPDATE menu SET kategori_id=?, nama=?, harga=?, deskripsi=?, status=?, foto=? WHERE id=?')
-                       ->execute([$kategori, $nama, $harga, $deskripsi, $status, $foto, $id]);
+                    $db->prepare('UPDATE menu SET kategori_id=?, nama=?, harga=?, deskripsi=?, tanpa_gula=?, status=?, foto=? WHERE id=?')
+                       ->execute([$kategori, $nama, $harga, $deskripsi, $tanpaGula, $status, $foto, $id]);
                 } else {
-                    $db->prepare('UPDATE menu SET kategori_id=?, nama=?, harga=?, deskripsi=?, status=? WHERE id=?')
-                       ->execute([$kategori, $nama, $harga, $deskripsi, $status, $id]);
+                    $db->prepare('UPDATE menu SET kategori_id=?, nama=?, harga=?, deskripsi=?, tanpa_gula=?, status=? WHERE id=?')
+                       ->execute([$kategori, $nama, $harga, $deskripsi, $tanpaGula, $status, $id]);
                 }
                 set_flash('sukses', 'Menu berhasil diperbarui.');
             } else {
-                $db->prepare('INSERT INTO menu (kategori_id, nama, harga, deskripsi, status, foto) VALUES (?,?,?,?,?,?)')
-                   ->execute([$kategori, $nama, $harga, $deskripsi, $status, $foto]);
+                $db->prepare('INSERT INTO menu (kategori_id, nama, harga, deskripsi, tanpa_gula, status, foto) VALUES (?,?,?,?,?,?,?)')
+                   ->execute([$kategori, $nama, $harga, $deskripsi, $tanpaGula, $status, $foto]);
                 set_flash('sukses', 'Menu baru berhasil ditambahkan.');
             }
         }
@@ -144,6 +145,7 @@ require __DIR__ . '/includes/layout_top.php';
                     onclick='formEdit(<?= json_encode([
                         'id' => $m['id'], 'nama' => $m['nama'], 'kategori_id' => $m['kategori_id'],
                         'harga' => (float) $m['harga'], 'deskripsi' => $m['deskripsi'], 'status' => $m['status'],
+                        'tanpa_gula' => (int) $m['tanpa_gula'],
                     ], JSON_HEX_APOS | JSON_HEX_QUOT) ?>)'>
               <i class="bi bi-pencil"></i>
             </button>
@@ -193,6 +195,12 @@ require __DIR__ . '/includes/layout_top.php';
           <label class="form-label">Deskripsi</label>
           <textarea name="deskripsi" id="f_deskripsi" class="form-control" rows="2"></textarea>
         </div>
+        <div class="form-check mb-3">
+          <input class="form-check-input" type="checkbox" name="tanpa_gula" value="1" id="f_tanpa_gula">
+          <label class="form-check-label" for="f_tanpa_gula">
+            Tanpa opsi gula <span class="text-secondary fw-normal">(contoh: Espresso, Americano — pelanggan tidak ditawari pilihan gula)</span>
+          </label>
+        </div>
         <div class="row">
           <div class="col-7 mb-3">
             <label class="form-label">Foto Menu <span class="text-secondary fw-normal">(JPG/PNG/WEBP, maks 2 MB)</span></label>
@@ -221,6 +229,7 @@ function formTambah() {
   ['f_id','f_nama','f_harga','f_deskripsi'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('f_id').value = 0;
   document.getElementById('f_status').value = 'aktif';
+  document.getElementById('f_tanpa_gula').checked = false;
 }
 function formEdit(m) {
   document.getElementById('judulModal').textContent = 'Edit Menu';
@@ -230,6 +239,7 @@ function formEdit(m) {
   document.getElementById('f_harga').value = m.harga;
   document.getElementById('f_deskripsi').value = m.deskripsi || '';
   document.getElementById('f_status').value = m.status;
+  document.getElementById('f_tanpa_gula').checked = !!m.tanpa_gula;
 }
 </script>
 

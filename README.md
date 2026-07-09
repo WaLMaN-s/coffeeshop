@@ -14,8 +14,13 @@ keranjang, checkout Cash/QRIS, lacak status pesanan, batalkan pesanan.
 
 **Fitur admin**: dashboard statistik + grafik penjualan, kelola menu/kategori/
 **meja & QR code** (generate, unduh PNG, cetak semua sekaligus)/pesanan/
-pembayaran/pelanggan, laporan (cetak PDF & export Excel), pengaturan toko,
-notifikasi pesanan baru.
+pembayaran/pelanggan/**akun kasir**, laporan (cetak PDF & export Excel),
+pengaturan toko, notifikasi pesanan baru.
+
+**Fitur kasir** (login terpisah dari admin, di `/kasir/`): dashboard antrean
+pesanan aktif, terima & proses pesanan, ubah status, verifikasi pembayaran,
+**cetak struk**, dan lihat data pelanggan — tanpa akses ke Menu/Kategori/
+Laporan/Pengaturan (itu khusus admin).
 
 ---
 
@@ -66,9 +71,12 @@ Foto menu sudah ikut ter-clone di `uploads/menu/`, tidak perlu diunduh ulang.
 | Halaman | URL |
 |---|---|
 | Login admin | http://localhost/lorongkopi/admin/login.php |
+| Login kasir | http://localhost/lorongkopi/kasir/login.php |
 | Pesan (simulasi scan meja) | http://localhost/lorongkopi/meja.php?kode=... |
 
-**Akun admin bawaan:** `admin` / `admin123` — **ganti passwordnya sebelum online.**
+**Akun admin bawaan:** `admin` / `admin123`.
+**Akun kasir bawaan:** `kasir` / `kasir123` — akun kasir tambahan dibuat admin lewat menu **Akun Kasir**.
+**Ganti kedua password ini sebelum online.**
 
 Database sudah terisi **10 meja siap pakai** (lihat tabel `meja`). Setelah
 login admin, buka menu **Meja & QR** — QR code tiap meja otomatis dibuat &
@@ -90,11 +98,14 @@ di `config/config.php`.
 
 ## 🗂 Struktur Singkat
 ```
-├── meja.php                                      # scan QR → isi nama → sesi meja
+├── meja.php                                      # scan QR → isi nama+no HP → sesi meja
 ├── index.php, keranjang.php, checkout.php, ...   # halaman pelanggan (butuh sesi meja)
 ├── admin/meja.php, admin/meja_cetak.php          # kelola meja + generate/cetak QR
-├── admin/login.php                               # login admin (terpisah dari pelanggan)
+├── admin/kasir.php                               # admin bikin/kelola akun kasir
+├── admin/login.php                               # login admin (terpisah dari pelanggan & kasir)
 ├── admin/                                        # panel admin lainnya
+├── kasir/login.php, kasir/index.php, ...         # panel kasir (terima pesanan, verifikasi bayar, cetak struk)
+├── kasir/struk.php                               # cetak struk per pesanan
 ├── includes/                                     # layout & init pelanggan
 ├── config/config.php                             # koneksi DB (edit di sini)
 ├── assets/css/, assets/js/qrcode.min.js          # tema situs/admin & generator QR
@@ -108,8 +119,13 @@ di `config/config.php`.
 - Ganti password admin sebelum online (tabel `admin`, pakai `password_hash`).
 - `uploads/` (termasuk `uploads/qrcode/`) harus bisa ditulis server
   (di Linux: `chmod -R 775 uploads`).
-- Pelanggan **wajib** scan QR meja dulu untuk bisa memesan — tidak ada lagi
-  akun email/password untuk pelanggan. Kalau meja dinonaktifkan atau QR
-  diperbarui (tombol ↻ di **Meja & QR**), QR lama otomatis tidak berlaku.
+- Pelanggan **wajib** scan QR meja dulu, lalu isi nama + no. HP, untuk bisa
+  memesan — tidak ada lagi akun email/password untuk pelanggan. Kalau meja
+  dinonaktifkan atau QR diperbarui (tombol ↻ di **Meja & QR**), QR lama
+  otomatis tidak berlaku.
+- No. HP dipakai sebagai kunci pengenal pelanggan: kalau nomor yang sama
+  scan lagi (meja mana pun), datanya nyambung ke pelanggan yang sama —
+  riwayat kunjungannya kelihatan di **Pelanggan** (admin & kasir) dan di
+  kartu "Riwayat Kunjungan Pelanggan Ini" pada detail pesanan.
 - `ambil_foto.php` hanya alat sekali pakai untuk mengunduh foto menu — tidak
   perlu dijalankan lagi.

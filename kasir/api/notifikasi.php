@@ -2,7 +2,7 @@
 require_once dirname(__DIR__, 2) . '/config/config.php';
 header('Content-Type: application/json');
 
-if (empty($_SESSION['admin_id'])) {
+if (empty($_SESSION['kasir_id'])) {
     http_response_code(401);
     echo json_encode(['error' => 'unauthorized']);
     exit;
@@ -35,4 +35,6 @@ $item = array_map(fn($n) => [
     'waktu'      => waktu_relatif($n['created_at']),
 ], $rows);
 
-echo json_encode(['jumlah' => $jumlah, 'item' => $item]);
+$antrean = (int) $db->query("SELECT COUNT(*) FROM pesanan WHERE status = 'menunggu'")->fetchColumn();
+
+echo json_encode(['jumlah' => $jumlah, 'antrean' => $antrean, 'item' => $item]);

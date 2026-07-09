@@ -58,7 +58,8 @@ require __DIR__ . '/includes/site_top.php';
 <div class="kartu">
   <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
     <div>
-      <div style="font-weight:800;font-size:15px"><?= e($pesanan['nomor_pesanan']) ?></div>
+      <div style="font-weight:800;font-size:18px;color:var(--primary)">Antrian #<?= no_antrian($pesanan['nomor_pesanan']) ?></div>
+      <div style="font-weight:700;font-size:13px"><?= e($pesanan['nomor_pesanan']) ?></div>
       <div style="font-size:12.5px;color:var(--ink-muted)"><?= tanggal_id($pesanan['created_at'], true) ?></div>
     </div>
     <?= badge_status_pesanan($pesanan['status']) ?>
@@ -132,8 +133,56 @@ require __DIR__ . '/includes/site_top.php';
           ? 'Scan QRIS di kasir dan sebutkan nomor pesananmu untuk menyelesaikan pembayaran.'
           : 'Bayar tunai di kasir sambil menyebutkan nomor pesananmu.' ?>
     </div>
+  <?php elseif ($bayar['status'] === 'sudah_dibayar'): ?>
+    <div class="pesan-info pesan-sukses" style="margin-bottom:0">
+      <i class="bi bi-check-circle-fill"></i>
+      Pembayaran diterima<?= $bayar['tanggal_bayar'] ? ' pada ' . tanggal_id($bayar['tanggal_bayar'], true) : '' ?>. Terima kasih!
+    </div>
   <?php endif; ?>
 </div>
+
+<?php if ($bayar['status'] === 'sudah_dibayar' && !empty($pengaturan['wifi_ssid'])): ?>
+<div class="kartu">
+  <div style="font-weight:700;margin-bottom:4px"><i class="bi bi-wifi" style="color:var(--primary)"></i> WiFi Gratis Buat Kamu</div>
+  <div style="font-size:12.5px;color:var(--ink-muted);margin-bottom:12px">Pembayaran lunas — silakan connect sambil menunggu pesanan.</div>
+  <div style="display:flex;align-items:center;gap:8px;padding:9px 12px;background:var(--bg);border-radius:10px;margin-bottom:8px">
+    <div style="flex:1;min-width:0">
+      <div style="font-size:11px;color:var(--ink-muted)">Nama WiFi</div>
+      <div style="font-weight:700;font-size:14px" id="wifiSsid"><?= e($pengaturan['wifi_ssid']) ?></div>
+    </div>
+    <button type="button" class="btn-garis" style="padding:7px 12px;font-size:12.5px" onclick="salinWifi('wifiSsid', this)"><i class="bi bi-copy"></i> Salin</button>
+  </div>
+  <?php if (!empty($pengaturan['wifi_password'])): ?>
+  <div style="display:flex;align-items:center;gap:8px;padding:9px 12px;background:var(--bg);border-radius:10px">
+    <div style="flex:1;min-width:0">
+      <div style="font-size:11px;color:var(--ink-muted)">Password</div>
+      <div style="font-weight:700;font-size:14px" id="wifiPass"><?= e($pengaturan['wifi_password']) ?></div>
+    </div>
+    <button type="button" class="btn-garis" style="padding:7px 12px;font-size:12.5px" onclick="salinWifi('wifiPass', this)"><i class="bi bi-copy"></i> Salin</button>
+  </div>
+  <?php endif; ?>
+</div>
+<script>
+function salinWifi(id, btn) {
+  const teks = document.getElementById(id).textContent.trim();
+  const beres = () => {
+    // simpan tampilan asli sekali saja, biar klik berulang tidak "macet" di Tersalin
+    if (!btn.dataset.asli) btn.dataset.asli = btn.innerHTML;
+    btn.innerHTML = '<i class="bi bi-check2"></i> Tersalin';
+    clearTimeout(btn._timerSalin);
+    btn._timerSalin = setTimeout(() => { btn.innerHTML = btn.dataset.asli; }, 1500);
+  };
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(teks).then(beres);
+  } else {
+    // fallback browser lama / non-HTTPS
+    const ta = document.createElement('textarea');
+    ta.value = teks; document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy'); ta.remove(); beres();
+  }
+}
+</script>
+<?php endif; ?>
 <?php endif; ?>
 
 <?php if ($pesanan['status'] === 'menunggu'): ?>

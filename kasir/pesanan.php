@@ -34,7 +34,7 @@ $stmt = $db->prepare("
 $stmt->execute($params);
 $daftar = $stmt->fetchAll();
 
-$pageTitle = 'Manajemen Pesanan';
+$pageTitle = 'Pesanan';
 $active    = 'pesanan';
 require __DIR__ . '/includes/layout_top.php';
 ?>
@@ -61,13 +61,14 @@ require __DIR__ . '/includes/layout_top.php';
   <div class="table-responsive">
     <table class="table table-k">
       <thead>
-        <tr><th>No. Pesanan</th><th>Pelanggan</th><th>Item</th><th>Total</th><th>Status</th><th>Pembayaran</th><th>Waktu</th><th class="text-end">Aksi</th></tr>
+        <tr><th>Antrian</th><th>No. Pesanan</th><th>Pelanggan</th><th>Item</th><th>Total</th><th>Status</th><th>Pembayaran</th><th>Waktu</th><th class="text-end">Aksi</th></tr>
       </thead>
       <tbody>
       <?php if (!$daftar): ?>
-        <tr><td colspan="8" class="text-center text-secondary py-4">Tidak ada pesanan.</td></tr>
+        <tr><td colspan="9" class="text-center text-secondary py-4">Tidak ada pesanan.</td></tr>
       <?php else: foreach ($daftar as $p): ?>
         <tr>
+          <td class="fw-bold" style="color:var(--primary)">#<?= no_antrian($p['nomor_pesanan']) ?></td>
           <td class="fw-semibold"><?= e($p['nomor_pesanan']) ?></td>
           <td>
             <?= e($p['pelanggan']) ?>
@@ -79,6 +80,7 @@ require __DIR__ . '/includes/layout_top.php';
           <td><?= $p['status_bayar'] ? badge_status_bayar($p['status_bayar']) : '<span class="text-secondary">-</span>' ?></td>
           <td class="text-secondary" style="font-size:13px"><?= tanggal_id($p['created_at'], true) ?></td>
           <td class="text-end">
+            <a href="struk.php?id=<?= $p['id'] ?>" target="_blank" class="btn btn-sm btn-light" title="Cetak struk"><i class="bi bi-printer"></i></a>
             <a href="pesanan_detail.php?id=<?= $p['id'] ?>" class="btn btn-sm btn-outline-primary">
               <i class="bi bi-eye me-1"></i>Detail
             </a>

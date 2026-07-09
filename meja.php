@@ -22,15 +22,21 @@ if ($kode !== '') {
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $meja) {
     $nama = trim($_POST['nama'] ?? '');
+    $noHp = trim($_POST['no_hp'] ?? '');
     if ($nama === '') {
         $error = 'Nama wajib diisi dulu ya.';
+    } elseif ($noHp === '' || !preg_match('/^[0-9+ -]{8,20}$/', $noHp)) {
+        $error = 'Nomor HP wajib diisi dengan format yang benar.';
     } else {
+        $pelangganId = cari_atau_buat_pelanggan($db, $nama, $noHp);
         session_regenerate_id(true);
         $_SESSION['meja'] = [
-            'meja_id'    => (int) $meja['id'],
-            'nomor_meja' => $meja['nomor_meja'],
-            'nama'       => $nama,
-            'sesi'       => bin2hex(random_bytes(16)),
+            'meja_id'      => (int) $meja['id'],
+            'nomor_meja'   => $meja['nomor_meja'],
+            'nama'         => $nama,
+            'no_hp'        => $noHp,
+            'pelanggan_id' => $pelangganId,
+            'sesi'         => bin2hex(random_bytes(16)),
         ];
         $_SESSION['keranjang'] = [];
         set_flash('sukses', 'Selamat datang, ' . $nama . '! Kamu di Meja ' . $meja['nomor_meja'] . '.');
@@ -98,6 +104,11 @@ $namaToko   = $pengaturan['nama_toko'] ?? 'Lorong Kopi';
           <label>Nama Kamu</label>
           <input type="text" name="nama" class="input" placeholder="Contoh: Budi" required autofocus maxlength="100"
                  value="<?= e($_POST['nama'] ?? '') ?>">
+        </div>
+        <div class="form-grup">
+          <label>No. HP</label>
+          <input type="tel" name="no_hp" class="input" placeholder="Contoh: 081234567890" required maxlength="20"
+                 value="<?= e($_POST['no_hp'] ?? '') ?>">
         </div>
         <button type="submit" class="btn-utama btn-blok"><i class="bi bi-cup-hot"></i> Mulai Pesan</button>
       </form>

@@ -22,9 +22,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $db->beginTransaction();
     try {
         $nomor = buat_nomor_pesanan($db);
-        $db->prepare('INSERT INTO pesanan (nomor_pesanan, meja_id, nama_tamu, sesi_kode, total, status, catatan) VALUES (?,?,?,?,?,?,?)')
+        $db->prepare('INSERT INTO pesanan (nomor_pesanan, pelanggan_id, meja_id, nama_tamu, sesi_kode, total, status, catatan) VALUES (?,?,?,?,?,?,?,?)')
            ->execute([
                $nomor,
+               $_SESSION['meja']['pelanggan_id'] ?? null,
                $_SESSION['meja']['meja_id'],
                $_SESSION['meja']['nama'],
                $_SESSION['meja']['sesi'],

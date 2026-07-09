@@ -41,8 +41,9 @@ define('DB_NAME', 'if0_12345678_lorongkopi');      // nama database
 
 ## 6. Selesai
 - Buka `https://namadomainkamu.rf.gd/admin/login.php` → login **admin / admin123**.
-- Segera ganti password admin di database (tabel `admin`) atau minta
-  dibuatkan halaman ganti password.
+- Buka `https://namadomainkamu.rf.gd/kasir/login.php` → login **kasir / kasir123**
+  (akun kasir tambahan dibuat lewat admin, menu **Akun Kasir**).
+- Segera ganti kedua password bawaan itu.
 - Buka menu **Meja & QR** di admin, lalu **Cetak Semua QR** untuk ditempel
   di tiap meja fisik — QR-nya otomatis pakai domain hosting yang sekarang
   diakses, tidak perlu diedit manual.

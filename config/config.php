@@ -184,10 +184,13 @@ function buat_nomor_pesanan(PDO $db): string
 /** URL lengkap ke meja.php?kode=... berdasarkan lokasi project saat ini (portable lokal/hosting). */
 function url_meja(string $kode): string
 {
-    $proto = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    $https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+        || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https');
+    $proto = $https ? 'https' : 'http';
     $host  = $_SERVER['HTTP_HOST'] ?? 'localhost';
-    $base  = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'])), '/');
+    $base  = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME']));
     // Dipanggil dari admin/, jadi naik satu folder ke root project.
     if (basename($base) === 'admin') $base = dirname($base);
+    $base  = rtrim($base, '/'); // root ("/") jadi string kosong, hindari "//" dobel
     return $proto . '://' . $host . $base . '/meja.php?kode=' . $kode;
 }

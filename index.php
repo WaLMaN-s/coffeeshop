@@ -90,6 +90,7 @@ require __DIR__ . '/includes/site_top.php';
             'harga'   => (float) $m['harga'],
             'foto'    => $m['foto'] ? 'uploads/menu/' . $m['foto'] : null,
             'minuman' => in_array($m['kategori'], KATEGORI_MINUMAN, true),
+            'tanpa_gula' => (bool) $m['tanpa_gula'],
         ], JSON_HEX_APOS | JSON_HEX_QUOT);
       ?>
         <div class="kartu-menu" data-item='<?= $dataItem ?>' style="cursor:pointer">

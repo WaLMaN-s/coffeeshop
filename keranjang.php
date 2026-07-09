@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $menuId = (int) ($_POST['menu_id'] ?? 0);
         $jumlah = max(1, min(20, (int) ($_POST['jumlah'] ?? 1)));
         $cek = $db->prepare("
-            SELECT m.nama, k.nama kategori FROM menu m
+            SELECT m.nama, m.tanpa_gula, k.nama kategori FROM menu m
             JOIN kategori k ON k.id = m.kategori_id
             WHERE m.id = ? AND m.status = 'aktif'");
         $cek->execute([$menuId]);
@@ -26,7 +26,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($minuman) {
                 $ukuran = array_key_exists($_POST['ukuran'] ?? '', UKURAN_OPSI) ? $_POST['ukuran'] : 'Regular';
                 $saji   = in_array($_POST['saji'] ?? '', SAJI_OPSI, true) ? $_POST['saji'] : 'Dingin';
-                $gula   = in_array($_POST['gula'] ?? '', GULA_OPSI, true) ? $_POST['gula'] : 'Normal Sugar';
+                // menu tanpa_gula (Espresso, Americano, dll) tidak menyimpan opsi gula
+                $gula   = $m['tanpa_gula'] ? null
+                        : (in_array($_POST['gula'] ?? '', GULA_OPSI, true) ? $_POST['gula'] : 'Normal Sugar');
             }
             $key = kunci_keranjang($menuId, $ukuran, $saji, $gula);
             if (isset($_SESSION['keranjang'][$key])) {

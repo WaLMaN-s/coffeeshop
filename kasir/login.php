@@ -1,7 +1,7 @@
 <?php
 require_once dirname(__DIR__) . '/config/config.php';
 
-if (!empty($_SESSION['admin_id'])) {
+if (!empty($_SESSION['kasir_id'])) {
     header('Location: index.php');
     exit;
 }
@@ -11,13 +11,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim($_POST['username'] ?? '');
     $password = $_POST['password'] ?? '';
 
-    $stmt = $db->prepare('SELECT * FROM admin WHERE username = ?');
+    $stmt = $db->prepare('SELECT * FROM kasir WHERE username = ?');
     $stmt->execute([$username]);
-    $admin = $stmt->fetch();
-    if ($admin && password_verify($password, $admin['password'])) {
+    $kasir = $stmt->fetch();
+    if ($kasir && password_verify($password, $kasir['password'])) {
         session_regenerate_id(true);
-        $_SESSION['admin_id']   = $admin['id'];
-        $_SESSION['admin_nama'] = $admin['nama'];
+        $_SESSION['kasir_id']   = $kasir['id'];
+        $_SESSION['kasir_nama'] = $kasir['nama'];
         header('Location: index.php');
         exit;
     }
@@ -32,7 +32,7 @@ $namaToko   = $pengaturan['nama_toko'] ?? 'Lorong Kopi';
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Login Admin — <?= e($namaToko) ?></title>
+<title>Login Kasir — <?= e($namaToko) ?></title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -52,10 +52,10 @@ $namaToko   = $pengaturan['nama_toko'] ?? 'Lorong Kopi';
         <img src="../uploads/toko/<?= e($pengaturan['logo']) ?>" alt="Logo" style="width:52px;height:52px;border-radius:14px;object-fit:cover;margin-bottom:10px">
       <?php else: ?>
         <span class="brand-icon" style="width:52px;height:52px;font-size:24px;border-radius:14px;display:inline-flex;align-items:center;justify-content:center;background:var(--primary);color:#fff;margin-bottom:10px">
-          <i class="bi bi-cup-hot-fill"></i>
+          <i class="bi bi-receipt-cutoff"></i>
         </span>
       <?php endif; ?>
-      <h1 class="fw-bold" style="font-size:19px;margin:0">Login Admin</h1>
+      <h1 class="fw-bold" style="font-size:19px;margin:0">Login Kasir</h1>
       <p class="text-secondary" style="font-size:13px;margin:4px 0 0"><?= e($namaToko) ?></p>
     </div>
 
@@ -74,7 +74,7 @@ $namaToko   = $pengaturan['nama_toko'] ?? 'Lorong Kopi';
     </form>
   </div>
   <p class="text-center text-secondary mt-3" style="font-size:12.5px">
-    Halaman pelanggan? <a href="../meja.php" style="color:var(--primary);font-weight:600">Pesan lewat QR meja</a>
+    Ini bukan admin? <a href="../admin/login.php" style="color:var(--primary);font-weight:600">Login admin</a>
   </p>
 </div>
 </body>

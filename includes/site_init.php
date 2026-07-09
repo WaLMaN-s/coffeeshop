@@ -1,5 +1,6 @@
 <?php
 require_once dirname(__DIR__) . '/config/config.php';
+require_once dirname(__DIR__) . '/config/fungsi.php';
 
 $pengaturan = get_pengaturan($db);
 $namaToko   = $pengaturan['nama_toko'] ?? 'Lorong Kopi';
@@ -64,8 +65,13 @@ function isi_keranjang(PDO $db): array
     return $hasil;
 }
 
-/** Sesi tamu aktif = sudah scan QR meja & isi nama. */
+/** Sesi tamu aktif = sudah scan QR meja & isi nama + no HP.
+ *  pelanggan_id wajib — sesi lama (sebelum ada no. HP) otomatis dianggap
+ *  tidak sah supaya tamunya isi ulang dan tercatat di tabel pelanggan. */
 function meja_aktif(): bool
 {
-    return !empty($_SESSION['meja']['meja_id']);
+    return !empty($_SESSION['meja']['meja_id']) && !empty($_SESSION['meja']['pelanggan_id']);
 }
+
+/* cari_atau_buat_pelanggan() ada di config/fungsi.php
+ * karena dipakai juga oleh POS kasir (kasir/pesanan_baru.php). */

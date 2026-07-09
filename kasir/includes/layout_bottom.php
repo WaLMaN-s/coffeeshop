@@ -12,6 +12,13 @@ document.getElementById('btnSidebar')?.addEventListener('click', () => {
 });
 bd.addEventListener('click', () => { sb.classList.remove('open'); bd.classList.remove('show'); });
 
+// Buka-tutup sidebar (desktop), pilihan diingat browser
+document.getElementById('btnSidebarMini')?.addEventListener('click', () => {
+  const l = document.getElementById('layoutKasir');
+  l.classList.toggle('sidebar-mini');
+  localStorage.setItem('kasirSidebarMini', l.classList.contains('sidebar-mini') ? '1' : '0');
+});
+
 // ---------- Suara dering pesanan masuk ----------
 let suaraAktif = localStorage.getItem('notifSuara') === '1';
 let audioCtx = null;
@@ -25,6 +32,7 @@ function dering() {
     audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
     if (audioCtx.state === 'suspended') audioCtx.resume();
     const t = audioCtx.currentTime;
+    // "ding-dong" dua nada, diulang 2x biar kedengeran di kedai yang ramai
     [[880, 0], [1174.66, .18], [880, .9], [1174.66, 1.08]].forEach(([f, d]) => {
       const o = audioCtx.createOscillator(), g = audioCtx.createGain();
       o.type = 'sine'; o.frequency.value = f;
@@ -40,11 +48,11 @@ btnSuara?.addEventListener('click', () => {
   suaraAktif = !suaraAktif;
   localStorage.setItem('notifSuara', suaraAktif ? '1' : '0');
   gambarBtnSuara();
-  if (suaraAktif) dering();
+  if (suaraAktif) dering(); // sekalian tes bunyi + buka izin audio browser
 });
 gambarBtnSuara();
 
-// ---------- Notifikasi (polling tiap 10 detik) ----------
+// ---------- Notifikasi (polling tiap 5 detik) ----------
 let notifIdTerakhir = null;
 const judulAsli = document.title;
 
@@ -60,6 +68,12 @@ async function muatNotif() {
       badge.classList.add('d-none');
       document.title = judulAsli;
     }
+    // badge merah "pesanan menunggu" di sidebar
+    const bp = document.getElementById('badgePesanan');
+    if (bp) {
+      bp.textContent = data.antrean;
+      bp.classList.toggle('d-none', !(data.antrean > 0));
+    }
     const ikon = { pesanan_baru: 'bi-receipt', pembayaran: 'bi-credit-card', pesanan_batal: 'bi-x-circle' };
     const list = document.getElementById('notifList');
     list.innerHTML = data.item.length === 0
@@ -72,9 +86,10 @@ async function muatNotif() {
           <div class="notif-waktu">${n.waktu}</div></div>
         </a>`).join('');
 
+    // Deteksi pesanan baru sejak poll sebelumnya -> dering
     const maxId = data.item.reduce((m, n) => Math.max(m, n.id || 0), 0);
     if (notifIdTerakhir === null) {
-      notifIdTerakhir = maxId;
+      notifIdTerakhir = maxId; // muat pertama: jangan langsung bunyi
     } else if (maxId > notifIdTerakhir) {
       const adaPesananBaru = data.item.some(n => n.id > notifIdTerakhir && n.tipe === 'pesanan_baru' && n.dibaca == 0);
       notifIdTerakhir = maxId;
@@ -92,7 +107,7 @@ document.getElementById('btnNotifBaca')?.addEventListener('click', async (ev) =>
   muatNotif();
 });
 muatNotif();
-setInterval(muatNotif, 10000);
+setInterval(muatNotif, 5000);
 </script>
 </body>
 </html>

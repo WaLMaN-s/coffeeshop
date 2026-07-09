@@ -19,9 +19,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['aksi'] ?? '') === 'ubah_st
     exit;
 }
 
+/* ---------- Verifikasi pembayaran cepat ---------- */
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['aksi'] ?? '') === 'verifikasi_bayar') {
+    $bayarId = (int) $_POST['bayar_id'];
+    $db->prepare("UPDATE pembayaran SET status = 'sudah_dibayar', tanggal_bayar = NOW() WHERE id = ?")->execute([$bayarId]);
+    $info = $db->prepare('SELECT nomor_pesanan FROM pesanan WHERE id = ?');
+    $info->execute([$id]);
+    tambah_notifikasi($db, 'pembayaran', 'Pembayaran pesanan ' . $info->fetchColumn() . ' berhasil diverifikasi.', $id);
+    set_flash('sukses', 'Pembayaran diverifikasi.');
+    header('Location: pesanan_detail.php?id=' . $id);
+    exit;
+}
+
 /* ---------- Data ---------- */
 $stmt = $db->prepare("
-    SELECT p.*, COALESCE(pl.nama, p.nama_tamu, 'Tamu') pelanggan, pl.email, pl.no_hp, m.nomor_meja
+    SELECT p.*, COALESCE(pl.nama, p.nama_tamu, 'Tamu') pelanggan, pl.no_hp, m.nomor_meja
     FROM pesanan p
     LEFT JOIN pelanggan pl ON pl.id = p.pelanggan_id
     LEFT JOIN meja m ON m.id = p.meja_id
@@ -69,8 +81,16 @@ require __DIR__ . '/includes/layout_top.php';
   <div class="col-lg-8">
     <div class="card-k mb-3">
       <div class="card-head">
-        <span><?= e($pesanan['nomor_pesanan']) ?></span>
-        <?= badge_status_pesanan($pesanan['status']) ?>
+        <span>
+          <span class="fw-bold" style="font-size:18px;color:var(--primary)">Antrian #<?= no_antrian($pesanan['nomor_pesanan']) ?></span>
+          <span class="text-secondary d-block" style="font-size:12.5px;font-weight:600"><?= e($pesanan['nomor_pesanan']) ?></span>
+        </span>
+        <div class="d-flex align-items-center gap-2">
+          <?= badge_status_pesanan($pesanan['status']) ?>
+          <a href="struk.php?id=<?= $pesanan['id'] ?>" target="_blank" class="btn btn-sm btn-primary">
+            <i class="bi bi-printer me-1"></i>Cetak Struk
+          </a>
+        </div>
       </div>
       <div class="table-responsive">
         <table class="table table-k">
@@ -124,9 +144,6 @@ require __DIR__ . '/includes/layout_top.php';
             <div><i class="bi bi-table me-2"></i>Meja <?= e($pesanan['nomor_meja']) ?></div>
           <?php endif; ?>
           <div><i class="bi bi-telephone me-2"></i><?= e($pesanan['no_hp'] ?: '-') ?></div>
-          <?php if (!$pesanan['nomor_meja']): ?>
-            <div><i class="bi bi-envelope me-2"></i><?= e($pesanan['email'] ?: '-') ?></div>
-          <?php endif; ?>
           <div><i class="bi bi-clock me-2"></i><?= tanggal_id($pesanan['created_at'], true) ?></div>
         </div>
       </div>
@@ -168,10 +185,17 @@ require __DIR__ . '/includes/layout_top.php';
             <span class="text-secondary">Status</span>
             <?= badge_status_bayar($bayar['status']) ?>
           </div>
-          <div class="d-flex justify-content-between">
+          <div class="d-flex justify-content-between mb-3">
             <span class="text-secondary">Tanggal Bayar</span>
             <span><?= $bayar['tanggal_bayar'] ? tanggal_id($bayar['tanggal_bayar'], true) : '-' ?></span>
           </div>
+          <?php if ($bayar['status'] === 'belum_dibayar'): ?>
+            <form method="post" onsubmit="return confirm('Terima pembayaran <?= rupiah($bayar['jumlah']) ?> tunai/QRIS untuk pesanan ini?')">
+              <input type="hidden" name="aksi" value="verifikasi_bayar">
+              <input type="hidden" name="bayar_id" value="<?= $bayar['id'] ?>">
+              <button class="btn btn-primary w-100"><i class="bi bi-cash-coin me-1"></i>Terima & Verifikasi Bayar</button>
+            </form>
+          <?php endif; ?>
         <?php else: ?>
           <p class="text-secondary mb-0">Belum ada data pembayaran.</p>
         <?php endif; ?>
@@ -181,15 +205,34 @@ require __DIR__ . '/includes/layout_top.php';
     <div class="card-k">
       <div class="card-head">Ubah Status Pesanan</div>
       <div class="card-body-k">
-        <form method="post">
-          <input type="hidden" name="aksi" value="ubah_status">
-          <select name="status" class="form-select mb-3">
-            <?php foreach (['menunggu', 'diproses', 'siap', 'selesai', 'dibatalkan'] as $s): ?>
-              <option value="<?= $s ?>" <?= $pesanan['status'] === $s ? 'selected' : '' ?>><?= label_status_pesanan($s) ?></option>
-            <?php endforeach; ?>
-          </select>
-          <button class="btn btn-primary w-100">Simpan Status</button>
-        </form>
+        <div class="d-grid gap-2">
+          <?php
+          $tombolStatus = [
+              'menunggu'   => ['bi-hourglass-split', 'Menunggu'],
+              'diproses'   => ['bi-arrow-repeat',    'Diproses'],
+              'siap'       => ['bi-check2-circle',   'Siap Diambil'],
+              'selesai'    => ['bi-check-all',       'Selesai'],
+              'dibatalkan' => ['bi-x-circle',        'Dibatalkan'],
+          ];
+          foreach ($tombolStatus as $s => [$ikonS, $labelS]):
+            $aktifS = $pesanan['status'] === $s;
+            $kelas  = $aktifS ? 'btn-primary' : ($s === 'dibatalkan' ? 'btn-outline-danger' : 'btn-outline-primary');
+          ?>
+            <?php if ($aktifS): ?>
+              <button type="button" class="btn <?= $kelas ?> text-start" style="padding:14px 18px;font-size:15px;font-weight:700" disabled>
+                <i class="bi <?= $ikonS ?> me-2"></i><?= $labelS ?> <i class="bi bi-check-lg ms-2"></i>
+              </button>
+            <?php else: ?>
+              <form method="post" class="d-grid" <?= $s === 'dibatalkan' ? "onsubmit=\"return confirm('Batalkan pesanan ini?')\"" : '' ?>>
+                <input type="hidden" name="aksi" value="ubah_status">
+                <input type="hidden" name="status" value="<?= $s ?>">
+                <button class="btn <?= $kelas ?> text-start" style="padding:14px 18px;font-size:15px;font-weight:600">
+                  <i class="bi <?= $ikonS ?> me-2"></i><?= $labelS ?>
+                </button>
+              </form>
+            <?php endif; ?>
+          <?php endforeach; ?>
+        </div>
       </div>
     </div>
   </div>

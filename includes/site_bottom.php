@@ -43,7 +43,7 @@
         <label><input type="radio" name="sh_saji" value="Panas"><span><i class="bi bi-fire"></i> Panas</span></label>
       </div>
     </div>
-    <div class="opsi-grup">
+    <div class="opsi-grup" id="shGrupGula">
       <div class="opsi-judul">Gula</div>
       <div class="opsi-pil">
         <label><input type="radio" name="sh_gula" value="Normal Sugar" checked><span>Normal</span></label>
@@ -106,6 +106,8 @@ function bukaSheet(item) {
   if (item.foto) { foto.src = item.foto; foto.style.display = ''; kosong.style.display = 'none'; }
   else { foto.style.display = 'none'; kosong.style.display = ''; }
   document.getElementById('shOpsiMinuman').style.display = item.minuman ? '' : 'none';
+  // menu seperti Espresso/Americano tidak menampilkan pilihan gula
+  document.getElementById('shGrupGula').style.display = item.tanpa_gula ? 'none' : '';
   // reset pilihan default
   for (const [n, v] of [['sh_ukuran', 'Regular'], ['sh_saji', 'Dingin'], ['sh_gula', 'Normal Sugar']]) {
     const el = document.querySelector(`input[name=${n}][value="${v}"]`);
@@ -133,7 +135,7 @@ document.getElementById('shSimpan').addEventListener('click', async () => {
   if (itemAktif.minuman) {
     p.set('ukuran', document.querySelector('input[name=sh_ukuran]:checked').value);
     p.set('saji',   document.querySelector('input[name=sh_saji]:checked').value);
-    p.set('gula',   document.querySelector('input[name=sh_gula]:checked').value);
+    if (!itemAktif.tanpa_gula) p.set('gula', document.querySelector('input[name=sh_gula]:checked').value);
   }
   const res = await fetch('keranjang.php', {
     method: 'POST',

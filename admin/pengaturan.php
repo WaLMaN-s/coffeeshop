@@ -7,6 +7,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $wa        = preg_replace('/[^0-9+]/', '', $_POST['whatsapp'] ?? '');
     $jam       = trim($_POST['jam_operasional'] ?? '');
     $deskripsi = trim($_POST['deskripsi'] ?? '');
+    $wifiSsid  = trim($_POST['wifi_ssid'] ?? '');
+    $wifiPass  = trim($_POST['wifi_password'] ?? '');
 
     if ($nama === '') {
         set_flash('gagal', 'Nama toko wajib diisi.');
@@ -23,9 +25,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $db->prepare('
                 UPDATE pengaturan SET nama_toko = ?, alamat = ?, whatsapp = ?, jam_operasional = ?, deskripsi = ?,
+                       wifi_ssid = ?, wifi_password = ?,
                        logo = COALESCE(?, logo), banner = COALESCE(?, banner)
                 WHERE id = 1')
-               ->execute([$nama, $alamat, $wa, $jam, $deskripsi, $logo, $banner]);
+               ->execute([$nama, $alamat, $wa, $jam, $deskripsi, $wifiSsid ?: null, $wifiPass ?: null, $logo, $banner]);
             set_flash('sukses', 'Pengaturan toko berhasil disimpan.');
         }
     }
@@ -69,6 +72,23 @@ require __DIR__ . '/includes/layout_top.php';
           <div class="mb-0">
             <label class="form-label">Deskripsi Toko</label>
             <textarea name="deskripsi" class="form-control" rows="3"><?= e($p['deskripsi'] ?? '') ?></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-k mb-3">
+        <div class="card-head">WiFi Kedai</div>
+        <div class="card-body-k">
+          <p class="text-secondary" style="font-size:13px;margin-bottom:14px">Ditampilkan di struk cetak kasir, biar pelanggan bisa langsung connect.</p>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Nama WiFi (SSID)</label>
+              <input type="text" name="wifi_ssid" class="form-control" placeholder="LorongKopi-Guest" value="<?= e($p['wifi_ssid'] ?? '') ?>">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Password WiFi</label>
+              <input type="text" name="wifi_password" class="form-control" placeholder="ngopidulu123" value="<?= e($p['wifi_password'] ?? '') ?>">
+            </div>
           </div>
         </div>
       </div>

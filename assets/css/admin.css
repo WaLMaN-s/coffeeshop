@@ -84,6 +84,23 @@ a { text-decoration: none; }
   .sidebar.open { transform: translateX(0); }
 }
 
+/* Sidebar mini: buka-tutup di desktop (ikon saja) */
+@media (min-width: 992px) {
+  .sidebar { transition: width .18s ease; }
+  .layout.sidebar-mini .sidebar { width: 68px; }
+  .layout.sidebar-mini .brand-name,
+  .layout.sidebar-mini .nav-item span { display: none; }
+  .layout.sidebar-mini .sidebar-brand { justify-content: center; padding-left: 8px; padding-right: 8px; }
+  .layout.sidebar-mini .sidebar-nav { padding-left: 8px; padding-right: 8px; }
+  .layout.sidebar-mini .nav-item { justify-content: center; position: relative; }
+  /* badge antrean tetap terlihat saat sidebar mini */
+  .layout.sidebar-mini .nav-item .badge {
+    display: inline-block !important;
+    position: absolute; top: 2px; right: 2px;
+    margin: 0 !important;
+  }
+}
+
 /* ---------- Topbar ---------- */
 .topbar {
   height: 64px;

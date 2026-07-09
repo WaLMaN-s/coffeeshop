@@ -61,6 +61,16 @@ $terlaris = $db->query("
     GROUP BY pi.menu_id ORDER BY terjual DESC LIMIT 5")->fetchAll();
 $maxTerjual = $terlaris ? max(array_column($terlaris, 'terjual')) : 1;
 
+/* ---------- Item terjual hari ini (pesanan tidak dibatalkan), per menu ---------- */
+$terjualHariIni = $db->query("
+    SELECT mn.nama, SUM(pi.jumlah) qty
+    FROM pesanan_item pi
+    JOIN pesanan p ON p.id = pi.pesanan_id AND p.status <> 'dibatalkan' AND DATE(p.created_at) = CURDATE()
+    JOIN menu mn ON mn.id = pi.menu_id
+    GROUP BY pi.menu_id, mn.nama
+    ORDER BY qty DESC, mn.nama")->fetchAll();
+$totalItemHariIni = array_sum(array_column($terjualHariIni, 'qty'));
+
 /* ---------- 5 pesanan terbaru ---------- */
 $terbaru = $db->query("
     SELECT p.*, COALESCE(pl.nama, p.nama_tamu, 'Tamu') pelanggan, m.nomor_meja
@@ -116,9 +126,32 @@ require __DIR__ . '/includes/layout_top.php';
   </div>
 </div>
 
-<!-- Baris 3: menu terlaris + pesanan terbaru -->
+<!-- Baris 3: terjual hari ini + menu terlaris + pesanan terbaru -->
 <div class="row g-3">
-  <div class="col-lg-5">
+  <div class="col-lg-4">
+    <div class="card-k h-100">
+      <div class="card-head">
+        <span>Terjual Hari Ini</span>
+        <span class="text-secondary" style="font-size:12.5px;font-weight:600"><?= (int) $totalItemHariIni ?> item</span>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-k align-middle">
+          <thead><tr><th>Menu</th><th class="text-end">Jumlah</th></tr></thead>
+          <tbody>
+          <?php if (!$terjualHariIni): ?>
+            <tr><td colspan="2" class="text-center text-secondary py-4">Belum ada penjualan hari ini.</td></tr>
+          <?php else: foreach ($terjualHariIni as $t): ?>
+            <tr>
+              <td><?= e($t['nama']) ?></td>
+              <td class="angka text-end fw-semibold"><?= (int) $t['qty'] ?></td>
+            </tr>
+          <?php endforeach; endif; ?>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
     <div class="card-k h-100">
       <div class="card-head">Menu Terlaris</div>
       <div class="card-body-k">
@@ -139,7 +172,7 @@ require __DIR__ . '/includes/layout_top.php';
       </div>
     </div>
   </div>
-  <div class="col-lg-7">
+  <div class="col-lg-4">
     <div class="card-k h-100">
       <div class="card-head">
         5 Pesanan Terbaru
