@@ -39,6 +39,7 @@
         <button type="button" id="btnKamera" class="btn-utama" style="display:none;margin-top:12px">
           <i class="bi bi-camera"></i> Nyalakan Kamera
         </button>
+        <div id="infoDebug" style="font-size:10.5px;color:#aab;margin-top:10px;word-break:break-word"></div>
       </div>
 
       <?php if ($error): ?><div class="pesan-info pesan-gagal" style="text-align:left"><?= e($error) ?></div><?php endif; ?>
@@ -122,13 +123,39 @@ function tick() {
 }
 
 const btnKamera = document.getElementById('btnKamera');
+const infoDebug = document.getElementById('infoDebug');
+
+/* Deteksi browser dalam aplikasi (WA/IG/FB dsb) — webview sering tidak bisa kamera. */
+function dalamAplikasi() {
+  const ua = navigator.userAgent || '';
+  return /wv\)|WhatsApp|Instagram|FBAN|FBAV|Line\//i.test(ua);
+}
+
+async function tulisDebug(err) {
+  let izin = '?';
+  try {
+    const p = await navigator.permissions.query({ name: 'camera' });
+    izin = p.state; // granted | prompt | denied
+  } catch (e) { /* browser lama */ }
+  infoDebug.textContent = 'Info teknis: ' + (err ? err.name + ' — ' + err.message : '-')
+    + ' · izin situs: ' + izin
+    + ' · ' + (navigator.userAgent || '').slice(0, 90);
+}
 
 function gagalKamera(err) {
   btnKamera.style.display = '';
+  tulisDebug(err);
+  if (dalamAplikasi()) {
+    statusKam.innerHTML = 'Sepertinya halaman ini dibuka dari <b>dalam aplikasi lain</b> (WhatsApp/Instagram dll) '
+      + 'yang tidak mengizinkan kamera.<br>Ketuk menu <b>&#8942;</b> lalu pilih <b>Buka di Chrome/browser</b>, atau masukkan kode meja di bawah.';
+    return;
+  }
   if (err && err.name === 'NotAllowedError') {
-    statusKam.innerHTML = 'Izin kamera <b>diblokir browser</b>.<br>'
-      + 'Ketuk ikon <i class="bi bi-lock-fill"></i> / <i class="bi bi-camera-video-off"></i> di address bar '
-      + '&rarr; <b>Izinkan Kamera</b>, lalu tekan tombol di bawah.';
+    statusKam.innerHTML = 'Izin kamera <b>diblokir</b>.<br>'
+      + '1) Ketuk ikon <i class="bi bi-lock-fill"></i> di address bar &rarr; <b>Izin/Permissions</b> &rarr; Kamera &rarr; <b>Izinkan</b>.<br>'
+      + '2) Kalau tidak ada pilihan itu: cek izin kamera untuk <b>aplikasi browsernya</b> di '
+      + 'Setelan HP &rarr; Aplikasi &rarr; Chrome/Brave &rarr; Izin &rarr; Kamera &rarr; Izinkan.<br>'
+      + 'Lalu tekan tombol di bawah.';
   } else if (err && err.name === 'NotFoundError') {
     statusKam.textContent = 'Kamera tidak ditemukan di perangkat ini — masukkan kode meja di bawah.';
   } else if (err && err.name === 'NotReadableError') {
