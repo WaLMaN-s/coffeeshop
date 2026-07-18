@@ -131,12 +131,15 @@ function dalamAplikasi() {
   return /wv\)|WhatsApp|Instagram|FBAN|FBAV|Line\//i.test(ua);
 }
 
-async function tulisDebug(err) {
-  let izin = '?';
+async function statusIzin() {
   try {
     const p = await navigator.permissions.query({ name: 'camera' });
-    izin = p.state; // granted | prompt | denied
-  } catch (e) { /* browser lama */ }
+    return p.state; // granted | prompt | denied
+  } catch (e) { return '?'; /* browser lama */ }
+}
+
+async function tulisDebug(err) {
+  const izin = await statusIzin();
   infoDebug.textContent = 'Info teknis: ' + (err ? err.name + ' — ' + err.message : '-')
     + ' · izin situs: ' + izin
     + ' · ' + (navigator.userAgent || '').slice(0, 90);
@@ -151,11 +154,13 @@ function gagalKamera(err) {
     return;
   }
   if (err && err.name === 'NotAllowedError') {
-    statusKam.innerHTML = 'Izin kamera <b>diblokir</b>.<br>'
-      + '1) Ketuk ikon <i class="bi bi-lock-fill"></i> di address bar &rarr; <b>Izin/Permissions</b> &rarr; Kamera &rarr; <b>Izinkan</b>.<br>'
-      + '2) Kalau tidak ada pilihan itu: cek izin kamera untuk <b>aplikasi browsernya</b> di '
-      + 'Setelan HP &rarr; Aplikasi &rarr; Chrome/Brave &rarr; Izin &rarr; Kamera &rarr; Izinkan.<br>'
-      + 'Lalu tekan tombol di bawah.';
+    statusKam.innerHTML = 'Izin kamera <b>diblokir</b> untuk situs ini, jadi browser tidak menampilkan popup izin lagi.<br>'
+      + 'Cara membukanya:<br>'
+      + '1) Ketuk ikon <i class="bi bi-lock-fill"></i> / <i class="bi bi-sliders"></i> di sebelah alamat web &rarr; '
+      + '<b>Izin</b> (Permissions) &rarr; <b>Kamera</b> &rarr; <b>Izinkan</b>, lalu muat ulang halaman.<br>'
+      + '2) Kalau menu itu tidak ada: Setelan HP &rarr; Aplikasi &rarr; Chrome/Brave &rarr; <b>Izin</b> &rarr; '
+      + 'Kamera &rarr; <b>Izinkan</b>, lalu buka lagi halaman ini.<br>'
+      + 'Setelah itu tekan tombol di bawah.';
   } else if (err && err.name === 'NotFoundError') {
     statusKam.textContent = 'Kamera tidak ditemukan di perangkat ini — masukkan kode meja di bawah.';
   } else if (err && err.name === 'NotReadableError') {
@@ -191,8 +196,21 @@ async function mulaiKamera() {
   requestAnimationFrame(tick);
 }
 
+/* Cek status izin dulu: kalau sudah diblokir, getUserMedia langsung gagal diam-diam
+   tanpa popup — jadi tampilkan instruksi buka blokir, bukan "meminta izin" palsu. */
+async function boot() {
+  tulisDebug(null);
+  if (dalamAplikasi()) { gagalKamera(null); return; }
+  const izin = await statusIzin();
+  if (izin === 'denied') {
+    gagalKamera({ name: 'NotAllowedError', message: 'izin situs berstatus diblokir (pre-check)' });
+    return;
+  }
+  mulaiKamera();
+}
+
 btnKamera.addEventListener('click', mulaiKamera);
-mulaiKamera();
+boot();
 </script>
 <?php endif; ?>
 </body>
