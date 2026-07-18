@@ -138,11 +138,17 @@ async function statusIzin() {
   } catch (e) { return '?'; /* browser lama */ }
 }
 
+/* Kirim laporan ke server supaya kendala kamera pelanggan bisa dilihat di log. */
+function kirimLog(teks) {
+  try { fetch('kamera_log.php', { method: 'POST', body: teks }); } catch (e) { /* abaikan */ }
+}
+
 async function tulisDebug(err) {
   const izin = await statusIzin();
   infoDebug.textContent = 'Info teknis: ' + (err ? err.name + ' — ' + err.message : '-')
     + ' · izin situs: ' + izin
     + ' · ' + (navigator.userAgent || '').slice(0, 90);
+  kirimLog((err ? err.name + ' — ' + err.message : 'boot') + ' | izin: ' + izin + ' | ' + navigator.userAgent);
 }
 
 function gagalKamera(err) {
@@ -193,6 +199,7 @@ async function mulaiKamera() {
   await video.play();
   videoWrap.style.display = '';
   statusKam.textContent = 'Arahkan kamera ke QR code di meja kamu.';
+  kirimLog('OK kamera nyala | ' + navigator.userAgent);
   requestAnimationFrame(tick);
 }
 

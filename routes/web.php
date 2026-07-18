@@ -21,6 +21,7 @@ use App\Http\Controllers\Admin;
 /* ---------- Pelanggan ---------- */
 Route::match(['get', 'post'], 'meja.php', [MejaController::class, 'form']);
 Route::get('keluar.php', [MejaController::class, 'keluar']);
+Route::post('kamera_log.php', [MejaController::class, 'kameraLog']);
 Route::get('masuk.php', fn () => redirect('meja.php'));
 Route::get('daftar.php', fn () => redirect('meja.php'));
 

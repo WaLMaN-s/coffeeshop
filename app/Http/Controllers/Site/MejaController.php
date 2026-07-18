@@ -61,6 +61,17 @@ class MejaController extends Controller
         return view('site.meja', compact('kode', 'meja', 'error', 'pengaturan', 'namaToko'));
     }
 
+    /** Terima laporan kendala kamera dari halaman scan (untuk debug perangkat pelanggan). */
+    public function kameraLog(Request $request)
+    {
+        $teks = substr(preg_replace('/[\x00-\x1f\x7f]/', ' ', (string) $request->getContent()), 0, 1000);
+        if ($teks !== '') {
+            $baris = '[' . date('Y-m-d H:i:s') . '] ' . $request->ip() . ' | ' . $teks . PHP_EOL;
+            @file_put_contents(storage_path('logs/kamera-debug.log'), $baris, FILE_APPEND | LOCK_EX);
+        }
+        return response()->noContent();
+    }
+
     /** Akhiri sesi meja. */
     public function keluar()
     {
